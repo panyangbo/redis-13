@@ -1,0 +1,371 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>CLIENT LIST &mdash; Redis 命令参考</title>
+<!-- RTD <head> -->
+<!-- jquery -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script type="text/javascript">
+  if (!window.jQuery) {
+    document.write('<script src="//media.readthedocs.org/javascript/jquery/jquery-2.0.3.min.js"><\/script>');
+  }
+</script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "redis";
+  var page_name = "server/client_list";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.6 final',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <link rel="top" title="Redis 命令参考" href="../index.html" />
+    <link rel="up" title="Server（服务器）" href="index.html" />
+    <link rel="next" title="CLIENT SETNAME" href="client_setname.html" />
+    <link rel="prev" title="CLIENT KILL" href="client_kill.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="总目录"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="client_setname.html" title="CLIENT SETNAME"
+             accesskey="N">下一页</a> |</li>
+        <li class="right" >
+          <a href="client_kill.html" title="CLIENT KILL"
+             accesskey="P">上一页</a> |</li>
+        <li><a href="../index.html">Redis 命令参考</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Server（服务器）</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="client-list">
+<span id="id1"></span><h1>CLIENT LIST<a class="headerlink" href="#client-list" title="永久链接至标题">¶</a></h1>
+<p><strong>CLIENT LIST</strong></p>
+<p>以人类可读的格式，返回所有连接到服务器的客户端信息和统计数据。</p>
+<div class="highlight-python"><pre>redis&gt; CLIENT LIST
+addr=127.0.0.1:43143 fd=6 age=183 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=client
+addr=127.0.0.1:43163 fd=5 age=35 idle=15 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=0 obl=0 oll=0 omem=0 events=r cmd=ping
+addr=127.0.0.1:43167 fd=7 age=24 idle=6 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=0 obl=0 oll=0 omem=0 events=r cmd=get</pre>
+</div>
+<dl class="docutils">
+<dt><strong>可用版本</strong></dt>
+<dd>&gt;= 2.4.0</dd>
+<dt><strong>时间复杂度</strong></dt>
+<dd>O(N) ， N 为连接到服务器的客户端数量。</dd>
+<dt><strong>返回值</strong></dt>
+<dd><p class="first">命令返回多行字符串，这些字符串按以下形式被格式化：</p>
+<ul class="simple">
+<li>每个已连接客户端对应一行（以 <tt class="docutils literal"><span class="pre">LF</span></tt> 分割）</li>
+<li>每行字符串由一系列 <tt class="docutils literal"><span class="pre">属性=值</span></tt> 形式的域组成，每个域之间以空格分开</li>
+</ul>
+<p>以下是域的含义：</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">addr</span></tt> ： 客户端的地址和端口</li>
+<li><tt class="docutils literal"><span class="pre">fd</span></tt> ： 套接字所使用的文件描述符</li>
+<li><tt class="docutils literal"><span class="pre">age</span></tt> ： 以秒计算的已连接时长</li>
+<li><tt class="docutils literal"><span class="pre">idle</span></tt> ： 以秒计算的空闲时长</li>
+<li><tt class="docutils literal"><span class="pre">flags</span></tt> ： 客户端 flag （见下文）</li>
+<li><tt class="docutils literal"><span class="pre">db</span></tt> ： 该客户端正在使用的数据库 ID</li>
+<li><tt class="docutils literal"><span class="pre">sub</span></tt> ： 已订阅频道的数量</li>
+<li><tt class="docutils literal"><span class="pre">psub</span></tt> ： 已订阅模式的数量</li>
+<li><tt class="docutils literal"><span class="pre">multi</span></tt> ： 在事务中被执行的命令数量</li>
+<li><tt class="docutils literal"><span class="pre">qbuf</span></tt> ： 查询缓存的长度（ <tt class="docutils literal"><span class="pre">0</span></tt> 表示没有查询在等待）</li>
+<li><tt class="docutils literal"><span class="pre">qbuf-free</span></tt> ： 查询缓存的剩余空间（ <tt class="docutils literal"><span class="pre">0</span></tt> 表示没有剩余空间）</li>
+<li><tt class="docutils literal"><span class="pre">obl</span></tt> ： 输出缓存的长度</li>
+<li><tt class="docutils literal"><span class="pre">oll</span></tt> ： 输出列表的长度（当输出缓存没有剩余空间时，回复被入队到这个队列里）</li>
+<li><tt class="docutils literal"><span class="pre">omem</span></tt> ： 输出缓存的内存占用量</li>
+<li><tt class="docutils literal"><span class="pre">events</span></tt> ： 文件描述符事件（见下文）</li>
+<li><tt class="docutils literal"><span class="pre">cmd</span></tt> ： 最近一次执行的命令</li>
+</ul>
+<p>客户端 flag 可以由以下部分组成：</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">O</span></tt> ： 客户端是 MONITOR 模式下的附属节点（slave）</li>
+<li><tt class="docutils literal"><span class="pre">S</span></tt> ： 客户端是一般模式下（normal）的附属节点</li>
+<li><tt class="docutils literal"><span class="pre">M</span></tt> ： 客户端是主节点（master）</li>
+<li><tt class="docutils literal"><span class="pre">x</span></tt> ： 客户端正在执行事务</li>
+<li><tt class="docutils literal"><span class="pre">b</span></tt> ： 客户端正在等待阻塞事件</li>
+<li><tt class="docutils literal"><span class="pre">i</span></tt> ： 客户端正在等待 VM I/O 操作（已废弃）</li>
+<li><tt class="docutils literal"><span class="pre">d</span></tt> ： 一个受监视（watched）的键已被修改， <tt class="docutils literal"><span class="pre">EXEC</span></tt> 命令将失败</li>
+<li><tt class="docutils literal"><span class="pre">c</span></tt> : 在将回复完整地写出之后，关闭链接</li>
+<li><tt class="docutils literal"><span class="pre">u</span></tt> : 客户端未被阻塞（unblocked）</li>
+<li><tt class="docutils literal"><span class="pre">A</span></tt> : 尽可能快地关闭连接</li>
+<li><tt class="docutils literal"><span class="pre">N</span></tt> : 未设置任何 flag</li>
+</ul>
+<p>文件描述符事件可以是：</p>
+<ul class="last simple">
+<li><tt class="docutils literal"><span class="pre">r</span></tt> : 客户端套接字（在事件 loop 中）是可读的（readable）</li>
+<li><tt class="docutils literal"><span class="pre">w</span></tt> : 客户端套接字（在事件 loop 中）是可写的（writeable）</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">注解</p>
+<p class="last">为了 debug 的需要，经常会对域进行添加和删除，一个安全的 Redis 客户端应该可以对 <tt class="docutils literal"><span class="pre">CLIENT</span> <span class="pre">LIST</span></tt> 的输出进行相应的处理（parse），比如忽略不存在的域，跳过未知域，诸如此类。</p>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'redis-command-cn'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<div id="sponsor">
+    <h2>赞助商</h2>
+    <p>计算关于生命、宇宙以及一切的终极的答案。</p>
+    <a href="http://vps.42qu.com" style="padding: 0px 0px 8px 20px;display: block;"><img src="../_static/42qu.png"/></a>
+    <a href="http://vps.42qu.com" style="font-weight: bold;padding-left: 20px;">42qu.com 主机空间</a>
+    <ul>
+        <li>中国 BGP 七线 / 美国五机房可选</li>
+        <li>独立 IP / root 权限</li>
+        <li><a href="http://www.vpsee.com/">vpsee</a> 专业技术支持</li>
+        <li>XEN 虚拟机，<span style="font-weight: bold;">卖给创业的你</span></li>
+    </ul>
+</div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="总目录"
+             >索引</a></li>
+        <li class="right" >
+          <a href="client_setname.html" title="CLIENT SETNAME"
+             >下一页</a> |</li>
+        <li class="right" >
+          <a href="client_kill.html" title="CLIENT KILL"
+             >上一页</a> |</li>
+        <li><a href="../index.html">Redis 命令参考</a> &raquo;</li>
+          <li><a href="index.html" >Server（服务器）</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; 版权所有 2013, Redis.
+      最后更新日期是 Sep 29, 2013.
+      使用 <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br/>
+<br/>
+<br/>
+
+
+<style type="text/css">
+  #version_menu, .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0.75s;
+    transition: all 0.25s 0.75s;
+  }
+  .footer_popout:hover #version_menu, .footer_popout:hover .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0s;
+    transition: all 0.25s 0s;
+  }
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    visibility: hidden;
+    opacity: 0;
+    bottom: 11px;
+    right: 47px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    visibility: visible;
+    opacity: 1;
+    right: 166px;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(//media.readthedocs.org//images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll top left no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/redis/?fromdocs=redis" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+        <li><a href="/en/2.6/">2.6</a></li>
+      
+        <li><a href="/en/2.4/">2.4</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache-server>
+	<poolConfig>
+		<maxActive>50</maxActive>
+		<maxIdel>45</maxIdel>
+		<minIdle>5</minIdle>
+		<maxWait>2000</maxWait>
+		<testOnBorrow>true</testOnBorrow>
+	</poolConfig>
+	<shardConfig isHash="true">
+		<shard name="shard1">
+			<server>
+				<ip>127.0.0.1</ip>
+				<port>6379</port>
+				<dbIndex>0</dbIndex>
+				<password>1qazxsw2</password>
+				<timeOut>2000</timeOut>
+			</server>
+			<!-- <server>
+				<ip>127.0.0.1</ip>
+				<port>6378</port>
+				<dbIndex>0</dbIndex>
+				<password>telek_1qazxsw2</password>
+				<timeOut>2000</timeOut>
+			</server> -->
+		</shard>
+		<shard name="shard2">
+			<server>
+				<ip>127.0.0.1</ip>
+				<port>6378</port>
+				<dbIndex>0</dbIndex>
+				<password>1qazxsw2</password>
+				<timeOut>2000</timeOut>
+			</server>
+		</shard>
+	</shardConfig>
+</cache-server>

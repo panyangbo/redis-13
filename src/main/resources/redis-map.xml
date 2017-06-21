@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache-server>
+	<poolConfig>
+		<maxActive>50</maxActive>
+		<maxIdel>45</maxIdel>
+		<minIdle>5</minIdle>
+		<maxWait>2000</maxWait>
+		<testOnBorrow>true</testOnBorrow>
+	</poolConfig>
+	<shardConfig isHash="false">
+		<shard name="shard1" >
+			<servtype>serve-one</servtype>
+			<servtype>serve-two</servtype>
+			<server>
+				<ip>127.0.0.1</ip>
+				<port>6377</port>
+				<dbIndex>0</dbIndex>
+				<password>1qazxsw2</password>
+				<timeOut>2000</timeOut>
+			</server>
+		</shard>
+		<shard name="shard2" >
+			<servtype>serve-three</servtype>
+			<server>
+				<ip>127.0.0.1</ip>
+				<port>6376</port>
+				<dbIndex>0</dbIndex>
+				<password>1qazxsw2</password>
+				<timeOut>2000</timeOut>
+			</server>
+		</shard>
+	</shardConfig>
+</cache-server>

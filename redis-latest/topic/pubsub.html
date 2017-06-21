@@ -1,0 +1,473 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>发布与订阅（pub/sub） &mdash; Redis 命令参考</title>
+<!-- RTD <head> -->
+<!-- jquery -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script type="text/javascript">
+  if (!window.jQuery) {
+    document.write('<script src="//media.readthedocs.org/javascript/jquery/jquery-2.0.3.min.js"><\/script>');
+  }
+</script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "redis";
+  var page_name = "topic/pubsub";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.6 final',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <link rel="top" title="Redis 命令参考" href="../index.html" />
+    <link rel="next" title="复制（Replication）" href="replication.html" />
+    <link rel="prev" title="事务（transaction）" href="transaction.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="总目录"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="replication.html" title="复制（Replication）"
+             accesskey="N">下一页</a> |</li>
+        <li class="right" >
+          <a href="transaction.html" title="事务（transaction）"
+             accesskey="P">上一页</a> |</li>
+        <li><a href="../index.html">Redis 命令参考</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pub-sub">
+<h1>发布与订阅（pub/sub）<a class="headerlink" href="#pub-sub" title="永久链接至标题">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">注解</p>
+<p class="last">本文是 <a class="reference external" href="http://redis.io/topics/pubsub">Redis 官网上的 pubsub 文档</a> 的翻译。</p>
+</div>
+<p><a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 、 <a class="reference internal" href="../pub_sub/unsubscribe.html#unsubscribe"><em>UNSUBSCRIBE</em></a> 和 <a class="reference internal" href="../pub_sub/publish.html#publish"><em>PUBLISH</em></a> 三个命令实现了<a class="reference external" href="http://en.wikipedia.org/wiki/Publish/subscribe">发布与订阅信息泛型</a>（Publish/Subscribe messaging paradigm），
+在这个实现中，
+发送者（发送信息的客户端）不是将信息直接发送给特定的接收者（接收信息的客户端），
+而是将信息发送给频道（channel），
+然后由频道将信息转发给所有对这个频道感兴趣的订阅者。</p>
+<p>发送者无须知道任何关于订阅者的信息，
+而订阅者也无须知道是那个客户端给它发送信息，
+它只要关注自己感兴趣的频道即可。</p>
+<p>对发布者和订阅者进行解构（decoupling），
+可以极大地提高系统的扩展性（scalability），
+并得到一个更动态的网络拓扑（network topology）。</p>
+<p>比如说，
+要订阅频道 <tt class="docutils literal"><span class="pre">foo</span></tt> 和 <tt class="docutils literal"><span class="pre">bar</span></tt> ，
+客户端可以使用频道名字作为参数来调用 <a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 命令：</p>
+<div class="highlight-python"><pre>redis&gt; SUBSCRIBE foo bar</pre>
+</div>
+<p>当有客户端发送信息到这些频道时，
+Redis 会将传入的信息推送到所有订阅这些频道的客户端里面。</p>
+<p>正在订阅频道的客户端不应该发送除 <a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 和 <a class="reference internal" href="../pub_sub/unsubscribe.html#unsubscribe"><em>UNSUBSCRIBE</em></a> 之外的其他命令。
+其中，
+<a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 可以用于订阅更多频道，
+而 <a class="reference internal" href="../pub_sub/unsubscribe.html#unsubscribe"><em>UNSUBSCRIBE</em></a> 则可以用于退订已订阅的一个或多个频道。</p>
+<p><a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 和 <a class="reference internal" href="../pub_sub/unsubscribe.html#unsubscribe"><em>UNSUBSCRIBE</em></a> 的执行结果会以信息的形式返回，
+客户端可以通过分析所接收信息的第一个元素，
+从而判断所收到的内容是一条真正的信息，
+还是 <a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 或 <a class="reference internal" href="../pub_sub/unsubscribe.html#unsubscribe"><em>UNSUBSCRIBE</em></a> 命令的操作结果。</p>
+<div class="section" id="id2">
+<h2>信息的格式<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>频道转发的每条信息都是一条带有三个元素的多条批量回复（multi-bulk reply）。</p>
+<p>信息的第一个元素标识了信息的类型：</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">subscribe</span></tt> ：
+表示当前客户端成功地订阅了信息第二个元素所指示的频道。
+而信息的第三个元素则记录了目前客户端已订阅频道的总数。</li>
+<li><tt class="docutils literal"><span class="pre">unsubscribe</span></tt> ：
+表示当前客户端成功地退订了信息第二个元素所指示的频道。
+信息的第三个元素记录了客户端目前仍在订阅的频道数量。
+当客户端订阅的频道数量降为 <tt class="docutils literal"><span class="pre">0</span></tt> 时，
+客户端不再订阅任何频道，
+它可以像往常一样，
+执行任何 Redis 命令。</li>
+<li><tt class="docutils literal"><span class="pre">message</span></tt> ：
+表示这条信息是由某个客户端执行 <a class="reference internal" href="../pub_sub/publish.html#publish"><em>PUBLISH</em></a> 命令所发送的，
+真正的信息。
+信息的第二个元素是信息来源的频道，
+而第三个元素则是信息的内容。</li>
+</ul>
+<p>举个例子，
+如果客户端执行以下命令：</p>
+<div class="highlight-python"><pre>redis&gt; SUBSCRIBE first second</pre>
+</div>
+<p>那么它将收到以下回复：</p>
+<div class="highlight-python"><pre>1) "subscribe"
+2) "first"
+3) (integer) 1
+
+1) "subscribe"
+2) "second"
+3) (integer) 2</pre>
+</div>
+<p>如果在这时，
+另一个客户端执行以下 <a class="reference internal" href="../pub_sub/publish.html#publish"><em>PUBLISH</em></a> 命令：</p>
+<div class="highlight-python"><pre>redis&gt; PUBLISH second Hello</pre>
+</div>
+<p>那么之前订阅了 <tt class="docutils literal"><span class="pre">second</span></tt> 频道的客户端将收到以下信息：</p>
+<div class="highlight-python"><pre>1) "message"
+2) "second"
+3) "hello"</pre>
+</div>
+<p>当订阅者决定退订所有频道时，
+它可以执行一个无参数的 <a class="reference internal" href="../pub_sub/unsubscribe.html#unsubscribe"><em>UNSUBSCRIBE</em></a> 命令：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">redis</span><span class="o">&gt;</span> <span class="n">UNSUBSCRIBE</span>
+</pre></div>
+</div>
+<p>这个命令将接到以下回复：</p>
+<div class="highlight-python"><pre>1) "unsubscribe"
+2) "second"
+3) (integer) 1
+
+1) "unsubscribe"
+2) "first"
+3) (integer) 0</pre>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>订阅模式<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>Redis 的发布与订阅实现支持模式匹配（pattern matching）：
+客户端可以订阅一个带 <tt class="docutils literal"><span class="pre">*</span></tt> 号的模式，
+如果某个/某些频道的名字和这个模式匹配，
+那么当有信息发送给这个/这些频道的时候，
+客户端也会收到这个/这些频道的信息。</p>
+<p>比如说，执行命令</p>
+<div class="highlight-python"><pre>redis&gt; PSUBSCRIBE news.*</pre>
+</div>
+<p>的客户端将收到来自 <tt class="docutils literal"><span class="pre">news.art.figurative</span></tt> 、 <tt class="docutils literal"><span class="pre">news.music.jazz</span></tt> 等频道的信息。</p>
+<p>客户端订阅的模式里面可以包含多个 glob 风格的通配符，
+比如 <tt class="docutils literal"><span class="pre">*</span></tt> 、 <tt class="docutils literal"><span class="pre">?</span></tt> 和 <tt class="docutils literal"><span class="pre">[...]</span></tt> ，
+等等。</p>
+<p>执行命令</p>
+<div class="highlight-python"><pre>redis&gt; PUNSUBSCRIBE news.*</pre>
+</div>
+<p>将退订 <tt class="docutils literal"><span class="pre">news.*</span></tt> 模式，
+其他已订阅的模式不会被影响。</p>
+<p>通过订阅模式接收到的信息，
+和通过订阅频道接收到的信息，
+这两者的格式不太一样：</p>
+<ul class="simple">
+<li>通过订阅模式而接收到的信息的类型为 <tt class="docutils literal"><span class="pre">pmessage</span></tt> ：
+这代表有某个客户端通过 <a class="reference internal" href="../pub_sub/publish.html#publish"><em>PUBLISH</em></a> 向某个频道发送了信息，
+而这个频道刚好匹配了当前客户端所订阅的某个模式。
+信息的第二个元素记录了被匹配的模式，
+第三个元素记录了被匹配的频道的名字，
+最后一个元素则记录了信息的实际内容。</li>
+</ul>
+<p>客户端处理 <a class="reference internal" href="../pub_sub/psubscribe.html#psubscribe"><em>PSUBSCRIBE</em></a> 和 <a class="reference internal" href="../pub_sub/punsubscribe.html#punsubscribe"><em>PUNSUBSCRIBE</em></a> 返回值的方式，
+和客户端处理 <a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 和 <a class="reference internal" href="../pub_sub/unsubscribe.html#unsubscribe"><em>UNSUBSCRIBE</em></a> 的方式类似：
+通过对信息的第一个元素进行分析，
+客户端可以判断接收到的信息是一个真正的信息，
+还是 <a class="reference internal" href="../pub_sub/psubscribe.html#psubscribe"><em>PSUBSCRIBE</em></a> 或 <a class="reference internal" href="../pub_sub/punsubscribe.html#punsubscribe"><em>PUNSUBSCRIBE</em></a> 命令的返回值。</p>
+</div>
+<div class="section" id="id4">
+<h2>通过频道和模式接收同一条信息<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>如果客户端订阅的多个模式匹配了同一个频道，
+或者客户端同时订阅了某个频道、以及匹配这个频道的某个模式，
+那么它可能会多次接收到同一条信息。</p>
+<p>举个例子，
+如果客户端执行了以下命令：</p>
+<div class="highlight-python"><pre>SUBSCRIBE foo
+PSUBSCRIBE f*</pre>
+</div>
+<p>那么当有信息发送到频道 <tt class="docutils literal"><span class="pre">foo</span></tt> 时，
+客户端将收到两条信息：
+一条来自频道 <tt class="docutils literal"><span class="pre">foo</span></tt> ，信息类型为 <tt class="docutils literal"><span class="pre">message</span></tt> ；
+另一条来自模式 <tt class="docutils literal"><span class="pre">f*</span></tt> ，信息类型为 <tt class="docutils literal"><span class="pre">pmessage</span></tt> 。</p>
+</div>
+<div class="section" id="id5">
+<h2>订阅总数<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h2>
+<p>在执行 <a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 、 <a class="reference internal" href="../pub_sub/unsubscribe.html#unsubscribe"><em>UNSUBSCRIBE</em></a> 、 <a class="reference internal" href="../pub_sub/psubscribe.html#psubscribe"><em>PSUBSCRIBE</em></a> 和 <a class="reference internal" href="../pub_sub/punsubscribe.html#punsubscribe"><em>PUNSUBSCRIBE</em></a> 命令时，
+返回结果的最后一个元素是客户端目前仍在订阅的频道和模式总数。</p>
+<p>当客户端退订所有频道和模式，
+也即是这个总数值下降为 <tt class="docutils literal"><span class="pre">0</span></tt> 的时候，
+客户端将退出订阅与发布状态。</p>
+</div>
+<div class="section" id="id6">
+<h2>编程示例<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h2>
+<p>Pieter Noordhuis 提供了一个使用 EventMachine 和 Redis 编写的 <a class="reference external" href="https://gist.github.com/348262">高性能多用户网页聊天软件</a> ，
+这个软件很好地展示了发布与订阅功能的用法。</p>
+</div>
+<div class="section" id="id8">
+<h2>客户端库实现提示<a class="headerlink" href="#id8" title="永久链接至标题">¶</a></h2>
+<p>因为所有接收到的信息都会包含一个信息来源：</p>
+<ul class="simple">
+<li>当信息来自频道时，来源是某个频道；</li>
+<li>当信息来自模式时，来源是某个模式。</li>
+</ul>
+<p>因此，
+客户端可以用一个哈希表，
+将特定来源和处理该来源的回调函数关联起来。
+当有新信息到达时，
+程序就可以根据信息的来源，
+在 O(1) 复杂度内，
+将信息交给正确的回调函数来处理。</p>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'redis-command-cn'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<div id="sponsor">
+    <h2>赞助商</h2>
+    <p>计算关于生命、宇宙以及一切的终极的答案。</p>
+    <a href="http://vps.42qu.com" style="padding: 0px 0px 8px 20px;display: block;"><img src="../_static/42qu.png"/></a>
+    <a href="http://vps.42qu.com" style="font-weight: bold;padding-left: 20px;">42qu.com 主机空间</a>
+    <ul>
+        <li>中国 BGP 七线 / 美国五机房可选</li>
+        <li>独立 IP / root 权限</li>
+        <li><a href="http://www.vpsee.com/">vpsee</a> 专业技术支持</li>
+        <li>XEN 虚拟机，<span style="font-weight: bold;">卖给创业的你</span></li>
+    </ul>
+</div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="总目录"
+             >索引</a></li>
+        <li class="right" >
+          <a href="replication.html" title="复制（Replication）"
+             >下一页</a> |</li>
+        <li class="right" >
+          <a href="transaction.html" title="事务（transaction）"
+             >上一页</a> |</li>
+        <li><a href="../index.html">Redis 命令参考</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; 版权所有 2013, Redis.
+      最后更新日期是 Sep 29, 2013.
+      使用 <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br/>
+<br/>
+<br/>
+
+
+<style type="text/css">
+  #version_menu, .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0.75s;
+    transition: all 0.25s 0.75s;
+  }
+  .footer_popout:hover #version_menu, .footer_popout:hover .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0s;
+    transition: all 0.25s 0s;
+  }
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    visibility: hidden;
+    opacity: 0;
+    bottom: 11px;
+    right: 47px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    visibility: visible;
+    opacity: 1;
+    right: 166px;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(//media.readthedocs.org//images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll top left no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/redis/?fromdocs=redis" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+        <li><a href="/en/2.6/">2.6</a></li>
+      
+        <li><a href="/en/2.4/">2.4</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

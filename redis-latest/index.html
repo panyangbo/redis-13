@@ -1,0 +1,735 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>Redis 命令参考 &mdash; Redis 命令参考</title>
+<!-- RTD <head> -->
+<!-- jquery -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script type="text/javascript">
+  if (!window.jQuery) {
+    document.write('<script src="//media.readthedocs.org/javascript/jquery/jquery-2.0.3.min.js"><\/script>');
+  }
+</script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "redis";
+  var page_name = "index";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.6 final',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Redis 命令参考" href="#" />
+    <link rel="next" title="Key（键）" href="key/index.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="总目录"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="key/index.html" title="Key（键）"
+             accesskey="N">下一页</a> |</li>
+        <li><a href="#">Redis 命令参考</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="redis">
+<h1>Redis 命令参考<a class="headerlink" href="#redis" title="永久链接至标题">¶</a></h1>
+<p>本文档是 <a class="reference external" href="http://redis.io/commands">Redis Command Reference</a> 的简体中文翻译版，
+原文十一个部分、共一百多个命令已经全部翻译完毕。</p>
+<p>所有示例代码均经过 Redis 2.8 版本测试，质量保证。
+（<a class="reference external" href="https://redis.readthedocs.org/en/latest/change_log.html#redis-2-8">查看 Redis 2.8 版本更新内容</a>）</p>
+<div class="admonition warning">
+<p class="first admonition-title">警告</p>
+<p class="last">注意，现在可以通过域名 <a class="reference external" href="http://www.redisdoc.com">www.RedisDoc.com</a> 来访问本文档了！</p>
+</div>
+<div class="section" id="ctrl-f">
+<h2>命令目录(使用 CTRL + F 快速查找)：<a class="headerlink" href="#ctrl-f" title="永久链接至标题">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="27%" />
+<col width="23%" />
+<col width="27%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="key/index.html">Key（键）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="key/del.html">DEL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/dump.html">DUMP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/exists.html">EXISTS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/expire.html">EXPIRE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/expireat.html">EXPIREAT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/keys.html">KEYS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/migrate.html">MIGRATE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/move.html">MOVE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/object.html">OBJECT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/persist.html">PERSIST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/pexpire.html">PEXPIRE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/pexpireat.html">PEXPIREAT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/pttl.html">PTTL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/randomkey.html">RANDOMKEY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/rename.html">RENAME</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/renamenx.html">RENAMENX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/restore.html">RESTORE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/sort.html">SORT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/ttl.html">TTL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="key/type.html">TYPE</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="string/index.html">String（字符串）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="string/append.html">APPEND</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/bitcount.html">BITCOUNT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/bitop.html">BITOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/decr.html">DECR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/decrby.html">DECRBY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/get.html">GET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/getbit.html">GETBIT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/getrange.html">GETRANGE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/getset.html">GETSET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/incr.html">INCR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/incrby.html">INCRBY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/incrbyfloat.html">INCRBYFLOAT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/mget.html">MGET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/mset.html">MSET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/msetnx.html">MSETNX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/psetex.html">PSETEX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/set.html">SET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/setbit.html">SETBIT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/setex.html">SETEX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/setnx.html">SETNX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/setrange.html">SETRANGE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string/strlen.html">STRLEN</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hash/index.html">Hash（哈希表）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hash/hdel.html">HDEL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hexists.html">HEXISTS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hget.html">HGET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hgetall.html">HGETALL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hincrby.html">HINCRBY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hincrbyfloat.html">HINCRBYFLOAT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hkeys.html">HKEYS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hlen.html">HLEN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hmget.html">HMGET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hmset.html">HMSET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hset.html">HSET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hsetnx.html">HSETNX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hash/hvals.html">HVALS</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="list/index.html">List（列表）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="list/blpop.html">BLPOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/brpop.html">BRPOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/brpoplpush.html">BRPOPLPUSH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/lindex.html">LINDEX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/linsert.html">LINSERT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/llen.html">LLEN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/lpop.html">LPOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/lpush.html">LPUSH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/lpushx.html">LPUSHX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/lrange.html">LRANGE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/lrem.html">LREM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/lset.html">LSET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/ltrim.html">LTRIM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/rpop.html">RPOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/rpoplpush.html">RPOPLPUSH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/rpush.html">RPUSH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="list/rpushx.html">RPUSHX</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="set/index.html">Set（集合）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="set/sadd.html">SADD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/scard.html">SCARD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/sdiff.html">SDIFF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/sdiffstore.html">SDIFFSTORE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/sinter.html">SINTER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/sinterstore.html">SINTERSTORE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/sismember.html">SISMEMBER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/smembers.html">SMEMBERS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/smove.html">SMOVE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/spop.html">SPOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/srandmember.html">SRANDMEMBER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/srem.html">SREM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/sunion.html">SUNION</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set/sunionstore.html">SUNIONSTORE</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sorted_set/index.html">SortedSet（有序集合）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zadd.html">ZADD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zcard.html">ZCARD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zcount.html">ZCOUNT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zincrby.html">ZINCRBY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zrange.html">ZRANGE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zrangebyscore.html">ZRANGEBYSCORE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zrank.html">ZRANK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zrem.html">ZREM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zremrangebyrank.html">ZREMRANGEBYRANK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zremrangebyscore.html">ZREMRANGEBYSCORE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zrevrange.html">ZREVRANGE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zrevrangebyscore.html">ZREVRANGEBYSCORE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zrevrank.html">ZREVRANK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zscore.html">ZSCORE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zunionstore.html">ZUNIONSTORE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorted_set/zinterstore.html">ZINTERSTORE</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pub_sub/index.html">Pub/Sub（发布/订阅）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pub_sub/psubscribe.html">PSUBSCRIBE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pub_sub/publish.html">PUBLISH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pub_sub/pubsub.html">PUBSUB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pub_sub/punsubscribe.html">PUNSUBSCRIBE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pub_sub/subscribe.html">SUBSCRIBE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pub_sub/unsubscribe.html">UNSUBSCRIBE</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="transaction/index.html">Transaction（事务）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="transaction/discard.html">DISCARD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transaction/exec.html">EXEC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transaction/multi.html">MULTI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transaction/unwatch.html">UNWATCH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transaction/watch.html">WATCH</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="script/index.html">Script（脚本）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="script/eval.html">EVAL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script/evalsha.html">EVALSHA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script/script_exists.html">SCRIPT EXISTS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script/script_flush.html">SCRIPT FLUSH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script/script_kill.html">SCRIPT KILL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script/script_load.html">SCRIPT LOAD</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="connection/index.html">Connection（连接）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="connection/auth.html">AUTH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="connection/echo.html">ECHO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="connection/ping.html">PING</a></li>
+<li class="toctree-l2"><a class="reference internal" href="connection/quit.html">QUIT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="connection/select.html">SELECT</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td colspan="2"><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="server/index.html">Server（服务器）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="server/bgrewriteaof.html">BGREWRITEAOF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/bgsave.html">BGSAVE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/client_getname.html">CLIENT GETNAME</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/client_kill.html">CLIENT KILL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/client_list.html">CLIENT LIST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/client_setname.html">CLIENT SETNAME</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/config_get.html">CONFIG GET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/config_resetstat.html">CONFIG RESETSTAT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/config_rewrite.html">CONFIG REWRITE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/config_set.html">CONFIG SET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/dbsize.html">DBSIZE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/debug_object.html">DEBUG OBJECT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/debug_segfault.html">DEBUG SEGFAULT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/flushall.html">FLUSHALL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/flushdb.html">FLUSHDB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/info.html">INFO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/lastsave.html">LASTSAVE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/monitor.html">MONITOR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/psync.html">PSYNC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/save.html">SAVE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/shutdown.html">SHUTDOWN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/slaveof.html">SLAVEOF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/slowlog.html">SLOWLOG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/sync.html">SYNC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server/time.html">TIME</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id1">
+<h2>文档<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>以下文章翻译自 <a class="reference external" href="http://redis.io/documentation">redis.io/documentation</a> 文档。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="topic/notification.html">键空间通知（keyspace notification）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="topic/notification.html#id1">功能概览</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/notification.html#id2">事件的类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/notification.html#id3">配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/notification.html#id4">命令产生的通知</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/notification.html#id5">过期通知的发送时间</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="topic/transaction.html">事务（transaction）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="topic/transaction.html#id1">用法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/transaction.html#id2">事务中的错误</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/transaction.html#redis-roll-back">为什么 Redis 不支持回滚（roll back）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/transaction.html#id3">放弃事务</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/transaction.html#check-and-set">使用 check-and-set 操作实现乐观锁</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/transaction.html#watch">了解 WATCH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/transaction.html#watch-zpop">使用 WATCH 实现 ZPOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/transaction.html#redis">Redis 脚本和事务</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="topic/pubsub.html">发布与订阅（pub/sub）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="topic/pubsub.html#id2">信息的格式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/pubsub.html#id3">订阅模式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/pubsub.html#id4">通过频道和模式接收同一条信息</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/pubsub.html#id5">订阅总数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/pubsub.html#id6">编程示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/pubsub.html#id8">客户端库实现提示</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="topic/replication.html">复制（Replication）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="topic/replication.html#id1">复制功能的运作原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/replication.html#id2">部分重同步</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/replication.html#id3">配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/replication.html#id4">只读从服务器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/replication.html#id5">从服务器相关配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/replication.html#n">主服务器只在有至少 N 个从服务器的情况下，才执行写操作</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="topic/protocol.html">通讯协议（protocol）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id1">网络层</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id2">请求</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id3">新版统一请求协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id4">回复</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id5">状态回复</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id6">错误回复</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id7">整数回复</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id8">批量回复</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id9">多条批量回复</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id10">多条批量回复中的空元素</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id11">多命令和流水线</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#id12">内联命令</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/protocol.html#redis">高性能 Redis 协议分析器</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="topic/persistence.html">持久化（persistence）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id2">Redis 持久化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#rdb">RDB 的优点</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id3">RDB 的缺点</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#aof">AOF 的优点</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id4">AOF 的缺点</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#rdb-aof">RDB 和 AOF ，我应该用哪一个？</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id5">RDB 快照</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id6">快照的运作方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#append-only-file-aof">只进行追加操作的文件（append-only file，AOF）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id7">AOF 重写</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id8">AOF 有多耐久？</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id9">如果 AOF 文件出错了，怎么办？</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id10">AOF 的运作方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id11">怎么从 RDB 持久化切换到 AOF 持久化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id12">RDB 和 AOF 之间的相互作用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id13">备份 Redis 数据</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/persistence.html#id14">容灾备份</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="topic/sentinel.html">Sentinel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id1">获取 Sentinel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id2">启动 Sentinel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id3">配置 Sentinel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id4">主观下线和客观下线</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id5">自动发现 Sentinel 和从服务器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#sentinel-api">Sentinel API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id8">故障转移</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id9">完成故障转移</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id10">在进行故障转移的过程中，领头 Sentinel 失效</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#id11">在故障转移过程中，被提升的新主服务器失效</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#resurrecting">主服务器恢复（resurrecting）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#tilt">TILT 模式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#busy">处理 <tt class="docutils literal"><span class="pre">-BUSY</span></tt> 状态</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#a">附录 A：算法与实现</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/sentinel.html#b-sentinel">附录 B： Sentinel 用法五分钟极速教程</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+<td colspan="2"><div class="toctree-wrapper first last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="topic/cluster-spec.html">Redis 集群规范</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id1">引言</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id2">什么是 Redis 集群？</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id3">Redis 集群实现的功能子集</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id4">Redis 集群协议中的客户端和服务器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id5">键分布模型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id6">集群节点属性</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id7">节点握手（已实现）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#moved">MOVED 转向</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#live-reconfiguration">集群在线重配置（live reconfiguration）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#ask">ASK 转向</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id8">容错</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#id12">发布/订阅（已实现，但仍然需要改善）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topic/cluster-spec.html#a-crc16-ansi">附录 A： CRC16 算法的 ANSI 实现参考</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id2">
+<h2>下载离线版本<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>下载： <a class="reference external" href="http://media.readthedocs.org/htmlzip/redis/latest/redis.zip">HTML 格式</a></p>
+<p>注意，因为文档总是在不断地更新和修正当中，请定期下载最新的离线文档，确保文档的有效性。</p>
+</div>
+<div class="section" id="id3">
+<h2>关于<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>本文档由 <a class="reference external" href="http://huangz.me">huangz</a> 翻译，版权归 Redis 官方所有。</p>
+<p>关注 <a class="reference external" href="https://github.com/huangz1990/redis">文档的 github 项目</a> 可以随时追踪文档的最新更新，
+<a class="reference internal" href="change_log.html"><em>更新日志(change log)</em></a> 记录了文档各个版本的主要更新信息。</p>
+<p>有任何问题、意见或建议，可以在文档配套的 disqus 论坛里留言，或者直接联系译者。</p>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'redis-command-cn'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<div id="sponsor">
+    <h2>赞助商</h2>
+    <p>计算关于生命、宇宙以及一切的终极的答案。</p>
+    <a href="http://vps.42qu.com" style="padding: 0px 0px 8px 20px;display: block;"><img src="_static/42qu.png"/></a>
+    <a href="http://vps.42qu.com" style="font-weight: bold;padding-left: 20px;">42qu.com 主机空间</a>
+    <ul>
+        <li>中国 BGP 七线 / 美国五机房可选</li>
+        <li>独立 IP / root 权限</li>
+        <li><a href="http://www.vpsee.com/">vpsee</a> 专业技术支持</li>
+        <li>XEN 虚拟机，<span style="font-weight: bold;">卖给创业的你</span></li>
+    </ul>
+</div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="总目录"
+             >索引</a></li>
+        <li class="right" >
+          <a href="key/index.html" title="Key（键）"
+             >下一页</a> |</li>
+        <li><a href="#">Redis 命令参考</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; 版权所有 2013, Redis.
+      最后更新日期是 Sep 29, 2013.
+      使用 <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br/>
+<br/>
+<br/>
+
+
+<style type="text/css">
+  #version_menu, .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0.75s;
+    transition: all 0.25s 0.75s;
+  }
+  .footer_popout:hover #version_menu, .footer_popout:hover .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0s;
+    transition: all 0.25s 0s;
+  }
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    visibility: hidden;
+    opacity: 0;
+    bottom: 11px;
+    right: 47px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    visibility: visible;
+    opacity: 1;
+    right: 166px;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(//media.readthedocs.org//images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll top left no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/redis/?fromdocs=redis" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+        <li><a href="/en/2.6/">2.6</a></li>
+      
+        <li><a href="/en/2.4/">2.4</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

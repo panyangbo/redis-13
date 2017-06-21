@@ -1,0 +1,404 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>SRANDMEMBER &mdash; Redis 命令参考</title>
+<!-- RTD <head> -->
+<!-- jquery -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script type="text/javascript">
+  if (!window.jQuery) {
+    document.write('<script src="//media.readthedocs.org/javascript/jquery/jquery-2.0.3.min.js"><\/script>');
+  }
+</script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "redis";
+  var page_name = "set/srandmember";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.6 final',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <link rel="top" title="Redis 命令参考" href="../index.html" />
+    <link rel="up" title="Set（集合）" href="index.html" />
+    <link rel="next" title="SREM" href="srem.html" />
+    <link rel="prev" title="SPOP" href="spop.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="总目录"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="srem.html" title="SREM"
+             accesskey="N">下一页</a> |</li>
+        <li class="right" >
+          <a href="spop.html" title="SPOP"
+             accesskey="P">上一页</a> |</li>
+        <li><a href="../index.html">Redis 命令参考</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Set（集合）</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="srandmember">
+<span id="id1"></span><h1>SRANDMEMBER<a class="headerlink" href="#srandmember" title="永久链接至标题">¶</a></h1>
+<p><strong>SRANDMEMBER key [count]</strong></p>
+<p>如果命令执行时，只提供了 <tt class="docutils literal"><span class="pre">key</span></tt> 参数，那么返回集合中的一个随机元素。</p>
+<p>从 Redis 2.6 版本开始， <a class="reference internal" href="#srandmember">SRANDMEMBER</a> 命令接受可选的 <tt class="docutils literal"><span class="pre">count</span></tt> 参数：</p>
+<ul class="simple">
+<li>如果 <tt class="docutils literal"><span class="pre">count</span></tt> 为正数，且小于集合基数，那么命令返回一个包含 <tt class="docutils literal"><span class="pre">count</span></tt> 个元素的数组，数组中的元素<strong>各不相同</strong>。如果 <tt class="docutils literal"><span class="pre">count</span></tt> 大于等于集合基数，那么返回整个集合。</li>
+<li>如果 <tt class="docutils literal"><span class="pre">count</span></tt> 为负数，那么命令返回一个数组，数组中的元素<strong>可能会重复出现多次</strong>，而数组的长度为 <tt class="docutils literal"><span class="pre">count</span></tt> 的绝对值。</li>
+</ul>
+<p>该操作和 <a class="reference internal" href="spop.html#spop"><em>SPOP</em></a> 相似，但 <a class="reference internal" href="spop.html#spop"><em>SPOP</em></a> 将随机元素从集合中移除并返回，而 <a class="reference internal" href="#srandmember">SRANDMEMBER</a> 则仅仅返回随机元素，而不对集合进行任何改动。</p>
+<dl class="docutils">
+<dt><strong>可用版本：</strong></dt>
+<dd>&gt;= 1.0.0</dd>
+<dt><strong>时间复杂度:</strong></dt>
+<dd><div class="first last line-block">
+<div class="line">只提供 <tt class="docutils literal"><span class="pre">key</span></tt> 参数时为 O(1) 。</div>
+<div class="line">如果提供了 <tt class="docutils literal"><span class="pre">count</span></tt> 参数，那么为 O(N) ，N 为返回数组的元素个数。</div>
+</div>
+</dd>
+<dt><strong>返回值:</strong></dt>
+<dd><div class="first last line-block">
+<div class="line">只提供 <tt class="docutils literal"><span class="pre">key</span></tt> 参数时，返回一个元素；如果集合为空，返回 <tt class="docutils literal"><span class="pre">nil</span></tt> 。</div>
+<div class="line">如果提供了 <tt class="docutils literal"><span class="pre">count</span></tt> 参数，那么返回一个数组；如果集合为空，返回空数组。</div>
+</div>
+</dd>
+</dl>
+<div class="highlight-python"><pre># 添加元素
+
+redis&gt; SADD fruit apple banana cherry
+(integer) 3
+
+# 只给定 key 参数，返回一个随机元素
+
+redis&gt; SRANDMEMBER fruit
+"cherry"
+
+redis&gt; SRANDMEMBER fruit
+"apple"
+
+# 给定 3 为 count 参数，返回 3 个随机元素
+# 每个随机元素都不相同
+
+redis&gt; SRANDMEMBER fruit 3
+1) "apple"
+2) "banana"
+3) "cherry"
+
+# 给定 -3 为 count 参数，返回 3 个随机元素
+# 元素可能会重复出现多次
+
+redis&gt; SRANDMEMBER fruit -3
+1) "banana"
+2) "cherry"
+3) "apple"
+
+redis&gt; SRANDMEMBER fruit -3
+1) "apple"
+2) "apple"
+3) "cherry"
+
+# 如果 count 是整数，且大于等于集合基数，那么返回整个集合
+
+redis&gt; SRANDMEMBER fruit 10
+1) "apple"
+2) "banana"
+3) "cherry"
+
+# 如果 count 是负数，且 count 的绝对值大于集合的基数
+# 那么返回的数组的长度为 count 的绝对值
+
+redis&gt; SRANDMEMBER fruit -10
+1) "banana"
+2) "apple"
+3) "banana"
+4) "cherry"
+5) "apple"
+6) "apple"
+7) "cherry"
+8) "apple"
+9) "apple"
+10) "banana"
+
+# SRANDMEMBER 并不会修改集合内容
+
+redis&gt; SMEMBERS fruit
+1) "apple"
+2) "cherry"
+3) "banana"
+
+# 集合为空时返回 nil 或者空数组
+
+redis&gt; SRANDMEMBER not-exists
+(nil)
+
+redis&gt; SRANDMEMBER not-eixsts 10
+(empty list or set)</pre>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'redis-command-cn'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<div id="sponsor">
+    <h2>赞助商</h2>
+    <p>计算关于生命、宇宙以及一切的终极的答案。</p>
+    <a href="http://vps.42qu.com" style="padding: 0px 0px 8px 20px;display: block;"><img src="../_static/42qu.png"/></a>
+    <a href="http://vps.42qu.com" style="font-weight: bold;padding-left: 20px;">42qu.com 主机空间</a>
+    <ul>
+        <li>中国 BGP 七线 / 美国五机房可选</li>
+        <li>独立 IP / root 权限</li>
+        <li><a href="http://www.vpsee.com/">vpsee</a> 专业技术支持</li>
+        <li>XEN 虚拟机，<span style="font-weight: bold;">卖给创业的你</span></li>
+    </ul>
+</div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="总目录"
+             >索引</a></li>
+        <li class="right" >
+          <a href="srem.html" title="SREM"
+             >下一页</a> |</li>
+        <li class="right" >
+          <a href="spop.html" title="SPOP"
+             >上一页</a> |</li>
+        <li><a href="../index.html">Redis 命令参考</a> &raquo;</li>
+          <li><a href="index.html" >Set（集合）</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; 版权所有 2013, Redis.
+      最后更新日期是 Sep 29, 2013.
+      使用 <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br/>
+<br/>
+<br/>
+
+
+<style type="text/css">
+  #version_menu, .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0.75s;
+    transition: all 0.25s 0.75s;
+  }
+  .footer_popout:hover #version_menu, .footer_popout:hover .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0s;
+    transition: all 0.25s 0s;
+  }
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    visibility: hidden;
+    opacity: 0;
+    bottom: 11px;
+    right: 47px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    visibility: visible;
+    opacity: 1;
+    right: 166px;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(//media.readthedocs.org//images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll top left no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/redis/?fromdocs=redis" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+        <li><a href="/en/2.6/">2.6</a></li>
+      
+        <li><a href="/en/2.4/">2.4</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

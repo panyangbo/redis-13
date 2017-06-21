@@ -1,0 +1,1108 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>Sentinel &mdash; Redis 命令参考</title>
+<!-- RTD <head> -->
+<!-- jquery -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script type="text/javascript">
+  if (!window.jQuery) {
+    document.write('<script src="//media.readthedocs.org/javascript/jquery/jquery-2.0.3.min.js"><\/script>');
+  }
+</script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "redis";
+  var page_name = "topic/sentinel";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.6 final',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <link rel="top" title="Redis 命令参考" href="../index.html" />
+    <link rel="next" title="Redis 集群规范" href="cluster-spec.html" />
+    <link rel="prev" title="持久化（persistence）" href="persistence.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="总目录"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="cluster-spec.html" title="Redis 集群规范"
+             accesskey="N">下一页</a> |</li>
+        <li class="right" >
+          <a href="persistence.html" title="持久化（persistence）"
+             accesskey="P">上一页</a> |</li>
+        <li><a href="../index.html">Redis 命令参考</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="sentinel">
+<h1>Sentinel<a class="headerlink" href="#sentinel" title="永久链接至标题">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">警告</p>
+<p class="last">Sentinel 系统目前正处于开发状态，
+本文档中的描述可能会随着 Sentinel 实现的演进而变化，
+敬请知悉。</p>
+</div>
+<p>Redis 的 Sentinel 系统用于管理多个 Redis 服务器（instance），
+该系统执行以下三个任务：</p>
+<ul class="simple">
+<li>监控（Monitoring）： Sentinel 会不断地检查你的主服务器和从服务器是否正常运行。</li>
+<li>提醒（Notification）：当被监控的某个 Redis 服务器出现问题时，
+Sentinel 可以向系统管理员发送通知，
+也可以通过 API 向其他程序发送通知。</li>
+<li>自动故障转移（Automatic failover）：
+当一个主服务器不能正常工作时，
+Sentinel 可以将一个从服务器升级为主服务器，
+并对其他从服务器进行配置，
+让它们使用新的主服务器。
+当应用程序连接到 Redis 服务器时，
+它们会被告知服务器的地址已经变更。</li>
+</ul>
+<p>Redis Sentinel 是一个分布式系统，
+你可以在架构中运行多个 Sentinel 进程，
+这些 Sentinel 进程通过相互通讯来判断一个主服务器是否断线，
+以及是否应该执行故障转移。</p>
+<p>虽然 Redis Sentinel 释出为一个单独的可执行文件 <tt class="docutils literal"><span class="pre">redis-sentinel</span></tt> ，
+但实际上它只是一个运行在特殊模式下的 Redis 服务器，
+你可以在启动一个普通 Redis 服务器时通过给定 <tt class="docutils literal"><span class="pre">--sentinel</span></tt> 选项来启动 Redis Sentinel 。</p>
+<p>Redis Sentinel 适用于 Redis 2.4.16 或以上版本，以及 Redis 2.6.0-rc6 以上版本。</p>
+<div class="section" id="id1">
+<h2>获取 Sentinel<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>目前 Sentinel 系统是 Redis 的 <tt class="docutils literal"><span class="pre">unstable</span></tt> 分支的一部分，
+你必须到 <a class="reference external" href="https://github.com/antirez/redis">Redis 项目的 Github 页面</a> 克隆一份 <tt class="docutils literal"><span class="pre">unstable</span></tt> 分值，
+然后通过编译来获得 Sentinel 系统。</p>
+<p>Sentinel 程序可以在编译后的 <tt class="docutils literal"><span class="pre">src</span></tt> 文档中发现，
+它是一个命名为 <tt class="docutils literal"><span class="pre">redis-sentinel</span></tt> 的程序。</p>
+<p>另外，
+你也可以通过下一节介绍的方法，
+让 <tt class="docutils literal"><span class="pre">redis-server</span></tt> 程序运行在 Sentinel 模式之下。</p>
+</div>
+<div class="section" id="id2">
+<h2>启动 Sentinel<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>对于 <tt class="docutils literal"><span class="pre">redis-sentinel</span></tt> 程序，
+你可以用以下命令来启动 Sentinel 系统：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">redis</span><span class="o">-</span><span class="n">sentinel</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">sentinel</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>对于 <tt class="docutils literal"><span class="pre">redis-server</span></tt> 程序，
+你可以用以下命令来启动服务器的 Sentinel 模式：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">redis</span><span class="o">-</span><span class="n">server</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">sentinel</span><span class="o">.</span><span class="n">conf</span> <span class="o">--</span><span class="n">sentinel</span>
+</pre></div>
+</div>
+<p>它们的效果是一样的。</p>
+</div>
+<div class="section" id="id3">
+<h2>配置 Sentinel<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>Redis 源码中包含了一个 <tt class="docutils literal"><span class="pre">sentinel.conf</span></tt> 文件，
+该文件是一个带有详细注释的 Sentinel 配置文件示例。</p>
+<p>以下是另一个 Sentinel 配置文件示例，
+它包含了运行 Sentinel 系统所需的最少配置：</p>
+<div class="highlight-python"><pre>sentinel monitor mymaster 127.0.0.1 6379 2
+sentinel down-after-milliseconds mymaster 60000
+sentinel failover-timeout mymaster 900000
+sentinel can-failover mymaster yes
+sentinel parallel-syncs mymaster 1
+
+sentinel monitor resque 192.168.1.3 6380 4
+sentinel down-after-milliseconds resque 10000
+sentinel failover-timeout resque 900000
+sentinel can-failover resque yes
+sentinel parallel-syncs resque 5</pre>
+</div>
+<p>第一行配置文件告诉 Sentinel 系统，
+让它监视一个名为 <tt class="docutils literal"><span class="pre">mymaster</span></tt> 的主服务器，
+该服务器的地址为 <tt class="docutils literal"><span class="pre">127.0.0.1</span></tt> ，
+端口号为 <tt class="docutils literal"><span class="pre">6379</span></tt> ，
+之后的 <tt class="docutils literal"><span class="pre">2</span></tt> 表示将这个主服务器识别为失效所需的 Sentinel 数量：
+至少要有两个 Sentinel 都认为这个主服务器失效时，
+自动故障转移操作才会启动。</p>
+<p>其他选项的基本格式如下：</p>
+<div class="highlight-python"><pre>sentinel &lt;选项的名字&gt; &lt;主服务器的名字&gt; &lt;选项的值&gt;</pre>
+</div>
+<p>各个选项的功能如下：</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">down-after-milliseconds</span></tt> 选项指定了 Sentinel 认为服务器已经断线所需的毫秒数。</p>
+<p>如果服务器在给定的毫秒数之内，
+没有返回 Sentinel 发送的 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令的回复，
+或者返回一个错误，
+那么 Sentinel 将这个服务器标记为主观下线（subjectively down，简称 <tt class="docutils literal"><span class="pre">SDOWN</span></tt> ）。</p>
+<p>不过只有一个 Sentinel 将服务器标记为主观下线并不一定会引起服务器的自动故障转移：
+只有在足够数量的 Sentinel 都将一个服务器标记为主观下线之后，
+服务器才会被标记为客观下线（objectively down， 简称 <tt class="docutils literal"><span class="pre">ODOWN</span></tt> ），
+这时自动故障迁移才会执行。</p>
+<p>将服务器标记为客观下线所需的 Sentinel 数量由对主服务器的配置决定。</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">can-failover</span></tt> 选项指定 Sentinel 是否需要在服务器被标记为 <tt class="docutils literal"><span class="pre">ODOWN</span></tt> 时，
+对服务器执行故障转移。</p>
+<p>通过这个选项，
+你可以让所有 Sentinel 都有执行故障转移的权力，
+也可以让一部分 Sentinel 单纯用于判断服务器是否下线，
+而另一部分 Sentinel 则负责执行故障转移。</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">parallel-syncs</span></tt> 选项指定了在执行故障转移时，
+最多可以有多少个从服务器同时对新的主服务器进行同步，
+这个数字越小，
+完成故障转移所需的时间就越长。</p>
+<p>如果从服务器被设置为允许使用过期数据集（参见对 <tt class="docutils literal"><span class="pre">redis.conf</span></tt> 文件中对 <tt class="docutils literal"><span class="pre">slave-serve-stale-data</span></tt> 选项的说明），
+那么你可能不希望所有从服务器都在同一时间向新的主服务器发送同步请求，
+因为尽管复制过程的绝大部分步骤都不会阻塞从服务器，
+但从服务器在载入主服务器发来的 RDB 文件时，
+仍然会造成从服务器在一段时间内不能处理命令请求：
+如果全部从服务器一起对新的主服务器进行同步，
+那么就可能会造成所有从服务器在短时间内全部不可用的情况出现。</p>
+<p>你可以通过将这个值设为 <tt class="docutils literal"><span class="pre">1</span></tt> 来保证每次只有一个从服务器处于不能处理命令请求的状态。</p>
+</li>
+</ul>
+<p>本文档剩余的内容将对 Sentinel 系统的其他选项进行介绍，
+<tt class="docutils literal"><span class="pre">sentinel.conf</span></tt> 文件中也对相关的选项进行了完整的注释。</p>
+</div>
+<div class="section" id="id4">
+<h2>主观下线和客观下线<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>前面简单介绍过，
+Redis 的 Sentinel 中关于下线（down）有两个不同的概念：</p>
+<ul>
+<li><p class="first">主观下线（Subjectively Down， 简称 SDOWN）是单个 Sentinel 实例做出的对某个服务器的下线判断。</p>
+</li>
+<li><p class="first">客观下线（Objectively Down， 简称 ODOWN）是多个 Sentinel 实例在做出主观下线判断之后，
+得出来某个服务器已经下线的结论。</p>
+<p>一个 Sentinel 可以通过 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span></tt> 命令来询问另一个 Sentinel ，
+查看被询问的 Sentinel 是否认为给定服务器已经下线。</p>
+</li>
+</ul>
+<p>从 Sentinel 的角度来看，
+当一个服务器没有在 <tt class="docutils literal"><span class="pre">master-down-after-milliseconds</span></tt> 选项所指定的时间内对 Sentinel 所发送的 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令做出有效的（valid）回复时，
+该服务器就会被标记为主观下线。</p>
+<p>以下列举的是 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令的有效回复：</p>
+<ul class="simple">
+<li>服务器返回 <tt class="docutils literal"><span class="pre">+PONG</span></tt> 。</li>
+<li>服务器返回 <tt class="docutils literal"><span class="pre">-LOADING</span></tt> 错误。</li>
+<li>服务器返回 <tt class="docutils literal"><span class="pre">-MASTERDOWN</span></tt> 错误。</li>
+</ul>
+<p>如果服务器返回其他回复，
+或者服务器不回复 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令，
+都会被认为是无效回复。</p>
+<p>一个服务器必须在给定的时间间隔内，
+一直返回无效回复才会被 Sentinel 标记为主观下线。</p>
+<p>举个例子，
+如果 <tt class="docutils literal"><span class="pre">master-down-after-milliseconds</span></tt> 选项的值为 <tt class="docutils literal"><span class="pre">30000</span></tt> 毫秒（<tt class="docutils literal"><span class="pre">30</span></tt> 秒），
+那么只要服务器能在每 <tt class="docutils literal"><span class="pre">29</span></tt> 秒之内返回至少一次有效回复，
+这个服务器就仍然会被认为是处于正常状态的。</p>
+<p>客观下线条件<strong>只适用于主服务器</strong>：
+对于任何其他类型的 Redis 实例，
+Sentinel 不需要协商如何处理它们，
+所以从服务器或者其他 Sentinel 永远不会达到客观下线条件。</p>
+<p>Redis Sentinel 的行为可以用一集所有 Sentinel 都遵循的规则来描述，
+多个 Sentinel 所组成的分布式 Sentinel 系统的行为也是从单个 Sentinel 的规则中衍生而出的。</p>
+<p>以下是 Sentinel 的第一部分规则，
+在文档之后的内容中，
+我们还会介绍其他规则：</p>
+<p><strong>Sentinel 规则 #1</strong>：每个 Sentinel 每秒都向它所知的主服务器、从服务器以及其他 Sentinel 实例发送一个 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令。</p>
+<p><strong>Sentinel 规则 #2</strong>：如果一个实例（instance）距离最后一次有效回复 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令的时间超过 <tt class="docutils literal"><span class="pre">down-after-milliseconds</span></tt> 选项所指定的值，
+那么这个实例会被 Sentinel 标记为主观下线。
+一个正确的回复可以是： <tt class="docutils literal"><span class="pre">+PONG</span></tt> 、 <tt class="docutils literal"><span class="pre">-LOADING</span></tt> 或者 <tt class="docutils literal"><span class="pre">-MASTERDOWN</span></tt> 。</p>
+<p><strong>Sentinel 规则 #3</strong>：
+每个 Sentinel 都可以接受 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span> <span class="pre">&lt;ip&gt;</span> <span class="pre">&lt;port&gt;</span></tt> 命令，
+如果给定的地址是一个主服务器，
+并且该服务器已经被 Sentinel 标记为主观下线，
+那么 Sentinel 向发送这个命令的实例返回真。</p>
+<p><strong>Sentinel 规则 #4</strong>：
+如果一个主服务器被标记为主观下线，
+那么正在监视这个主服务器的所有 Sentinel 都必须每秒发送一次 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span></tt> 命令，
+检查这一判断是否正确。</p>
+<p><strong>Sentinel 规则 #5</strong>：
+如果有足够数量的 Sentinel 都将同一个主服务器标记为主观下线，
+并且这些 Sentinel 所发送的最后一条 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span></tt> 命令回复不超过 5 秒钟，
+那么这个主服务器会被标记为客观下线。</p>
+<div class="admonition note">
+<p class="first admonition-title">注解</p>
+<p class="last">译注：“Sentinel 所发送的最后一条 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span></tt> 命令回复不超过 5 秒钟”指的是，
+某个 Sentinel 在 5 秒钟之内对主服务器进行了一次检测，
+并且主服务器的回复仍然是不正确的。</p>
+</div>
+<p><strong>Sentinel 规则 #6</strong>：
+一般情况下，
+每个 Sentinel 每 10 秒向它所知道的每个主服务器和从服务器发送一个 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令。
+当一个主服务器被 Sentinel 标记为主观下线时，
+Sentinel 向这个主服务器的所有从服务器发送 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令的频率会从 10 秒一次改为每秒一次。</p>
+<p><strong>Sentinel 规则 #7</strong>：
+如果启动 Sentinel 时指定的主服务器实际上是从服务器，
+那么 Sentinel 会根据从服务器返回的 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令的信息，
+自动将监视的目标改为从服务器所属的主服务器。
+所以对从服务器启动 Sentinel 也是安全的。</p>
+</div>
+<div class="section" id="id5">
+<h2>自动发现 Sentinel 和从服务器<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h2>
+<p>一个 Sentinel 可以连接其他多个 Sentinel ，
+各个 Sentinel 之间可以互相检查对方的可用性，
+并进行信息交换。</p>
+<p>你无须对你所运行的每个 Sentinel 设置其他 Sentinel 的地址，
+因为 Sentinel 可以使用发布与订阅功能，
+通过发送信息的方法来自动发现其他正在监视相同主服务器的 Sentinel 。</p>
+<p>这一功能是通过向频道 <tt class="docutils literal"><span class="pre">__sentinel__:hello</span></tt> 发送信息来实现的。</p>
+<p>与此类似，
+你也不必手动列出主服务器属下的所有从服务器，
+因为 Sentinel 可以通过询问主服务器来获得所有从服务器的信息。</p>
+<p><strong>Sentinel 规则 #8</strong>：
+每个 Sentinel 每 5 秒就会向它所监视的主服务器的 <tt class="docutils literal"><span class="pre">__sentinel__:hello</span></tt> 频道发送一条信息，
+信息的内容包括这个 Sentinel 的 IP 地址、端口号、运行 ID （runid），
+以及是否可以进行故障转移（由 <tt class="docutils literal"><span class="pre">sentinel.conf</span></tt> 中的 <tt class="docutils literal"><span class="pre">can-failover</span></tt> 选项决定）。</p>
+<p><strong>Sentinel 规则 #9</strong>：
+每个 Sentinel 都会订阅它所监视的主服务器的 <tt class="docutils literal"><span class="pre">__sentinel__:hello</span></tt> 频道，
+等待新的 Sentinel 出现。
+当发现新 Sentinel 时，
+原来的 Sentinel 会将这个新 Sentinel 加入到对主服务器的监视工作中。</p>
+<p><strong>Sentinel 规则 #10</strong>：
+在添加一个 Sentinel 之前，
+已有的 Sentinel 会对这个 Sentinel 的运行 ID 、IP 地址和端口进行检查，
+只有在该 Sentinel 尚未存在的情况下，
+已有的 Sentinel 才会让这个新 Sentinel 开始对主服务器进行监视。</p>
+</div>
+<div class="section" id="sentinel-api">
+<h2>Sentinel API<a class="headerlink" href="#sentinel-api" title="永久链接至标题">¶</a></h2>
+<p>在默认情况下，
+Sentinel 使用 TCP 端口 <tt class="docutils literal"><span class="pre">26379</span></tt> 。</p>
+<p>Sentinel 接受 Redis 协议的命令请求，
+所以你可以使用 <tt class="docutils literal"><span class="pre">redis-cli</span></tt> ，
+或者任何其他 Redis 客户端来与 Sentinel 进行通讯。</p>
+<p>有两种方式可以和 Sentinel 进行通讯：</p>
+<ul class="simple">
+<li>第一种方法是通过直接发送命令来查询被监视 Redis 服务器的当前状态，
+以及 Sentinel 所知道的关于其他 Sentinel 的信息，
+诸如此类。</li>
+<li>另一种方法是使用发布与订阅功能，
+通过接收 Sentinel 发送的通知：
+当执行故障转移操作，
+或者某个被监视的服务器被判断为主观下线或者客观下线时，
+Sentinel 就会发送相应的信息。</li>
+</ul>
+<div class="section" id="id6">
+<h3>Sentinel 命令<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h3>
+<p>以下列出的是 Sentinel 接受的命令：</p>
+<ul class="simple">
+<li><a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> ：返回 <tt class="docutils literal"><span class="pre">PONG</span></tt> 。</li>
+<li><tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">masters</span></tt> ：列出所有被监视的主服务器，以及它们的状态。</li>
+<li><tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">slaves</span> <span class="pre">&lt;master</span> <span class="pre">name&gt;</span></tt> ：列出给定主服务器的所有从服务器，以及它们的状态。</li>
+<li><tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span> <span class="pre">&lt;ip&gt;</span> <span class="pre">&lt;port&gt;</span></tt> ：
+返回一个包含两个元素的 multi bulk reply 。
+第一个元素的值可以是 <tt class="docutils literal"><span class="pre">0</span></tt> 或者 <tt class="docutils literal"><span class="pre">1</span></tt> ， <tt class="docutils literal"><span class="pre">0</span></tt> 表示给定的主服务器处于主观下线状态， <tt class="docutils literal"><span class="pre">1</span></tt> 则表示主服务器正常运行中。
+第二个元素则是给定主服务器的主观领袖（subjective leader），
+也即是，
+当需要对给定主服务器执行故障转移操作时，
+负责执行故障转移操作的 Sentinel 实例的运行 ID 。</li>
+<li><tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">get-master-addr-by-name</span> <span class="pre">&lt;master</span> <span class="pre">name&gt;</span></tt> ：
+返回给定名字的主服务器的 IP 地址和端口号。
+如果这个主服务器正在执行故障转移操作，
+或者故障转移操作已经成功完成，
+那么这个命令返回新的主服务器的 IP 地址和端口号。</li>
+<li><tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">reset</span> <span class="pre">&lt;pattern&gt;</span></tt> ：
+重置所有名字和给定模式 <tt class="docutils literal"><span class="pre">pattern</span></tt> 相匹配的主服务器。
+<tt class="docutils literal"><span class="pre">pattern</span></tt> 参数是一个 Glob 风格的模式。
+重置操作清楚主服务器目前的所有状态，
+包括正在执行中的故障转移，
+并移除目前已经发现和关联的，
+主服务器的所有从服务器和 Sentinel 。</li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h3>发布与订阅信息<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h3>
+<p>客户端可以将 Sentinel 看作是一个只提供了订阅功能的 Redis 服务器：
+你不可以使用 <a class="reference internal" href="../pub_sub/publish.html#publish"><em>PUBLISH</em></a> 命令向这个服务器发送信息，
+但你可以用 <a class="reference internal" href="../pub_sub/subscribe.html#subscribe"><em>SUBSCRIBE</em></a> 命令或者 <a class="reference internal" href="../pub_sub/psubscribe.html#psubscribe"><em>PSUBSCRIBE</em></a> 命令，
+通过订阅给定的频道来获取相应的事件提醒。</p>
+<p>一个频道能够接收和这个频道的名字相同的事件。
+比如说，
+名为 <tt class="docutils literal"><span class="pre">+sdown</span></tt> 的频道就可以接收所有实例进入主观下线（SDOWN）状态的事件。</p>
+<p>通过执行 <tt class="docutils literal"><span class="pre">PSUBSCRIBE</span> <span class="pre">*</span></tt> 命令可以接收所有事件信息。</p>
+<p>以下列出的是客户端可以通过订阅来获得的频道和信息的格式：
+第一个英文单词是频道/事件的名字，
+其余的是数据的格式。</p>
+<p>注意，
+当格式中包含 <tt class="docutils literal"><span class="pre">instance</span> <span class="pre">details</span></tt> 字样时，
+表示频道所返回的信息中包含了以下用于识别目标实例的内容：</p>
+<div class="highlight-python"><pre>&lt;instance-type&gt; &lt;name&gt; &lt;ip&gt; &lt;port&gt; @ &lt;master-name&gt; &lt;master-ip&gt; &lt;master-port&gt;</pre>
+</div>
+<p><tt class="docutils literal"><span class="pre">&#64;</span></tt> 字符之后的内容用于指定主服务器，
+这些内容是可选的，
+它们仅在 <tt class="docutils literal"><span class="pre">&#64;</span></tt> 字符之前的内容指定的实例不是主服务器时使用。</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">+reset-master</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：主服务器已被重置。</li>
+<li><tt class="docutils literal"><span class="pre">+slave</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：一个新的从服务器已经被 Sentinel 识别并关联。</li>
+<li><tt class="docutils literal"><span class="pre">+failover-state-reconf-slaves</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：故障转移状态切换到了 <tt class="docutils literal"><span class="pre">reconf-slaves</span></tt> 状态。</li>
+<li><tt class="docutils literal"><span class="pre">+failover-detected</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：另一个 Sentinel 开始了一次故障转移操作，或者一个从服务器转换成了主服务器。</li>
+<li><tt class="docutils literal"><span class="pre">+slave-reconf-sent</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：领头（leader）的 Sentinel 向实例发送了 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令，为实例设置新的主服务器。</li>
+<li><tt class="docutils literal"><span class="pre">+slave-reconf-inprog</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：实例正在将自己设置为指定主服务器的从服务器，但相应的同步过程仍未完成。</li>
+<li><tt class="docutils literal"><span class="pre">+slave-reconf-done</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：从服务器已经成功完成对新主服务器的同步。</li>
+<li><tt class="docutils literal"><span class="pre">-dup-sentinel</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：对给定主服务器进行监视的一个或多个 Sentinel 已经因为重复出现而被移除 —— 当 Sentinel 实例重启的时候，就会出现这种情况。</li>
+<li><tt class="docutils literal"><span class="pre">+sentinel</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：一个监视给定主服务器的新 Sentinel 已经被识别并添加。</li>
+<li><tt class="docutils literal"><span class="pre">+sdown</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：给定的实例现在处于主观下线状态。</li>
+<li><tt class="docutils literal"><span class="pre">-sdown</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：给定的实例已经不再处于主观下线状态。</li>
+<li><tt class="docutils literal"><span class="pre">+odown</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：给定的实例现在处于客观下线状态。</li>
+<li><tt class="docutils literal"><span class="pre">-odown</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：给定的实例已经不再处于客观下线状态。</li>
+<li><tt class="docutils literal"><span class="pre">+failover-takedown</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：如果设定的故障转移时间已经过去 25% ，并且故障转移工作没有任何进展的话，那么给定的 Sentinel 就会成为新的领头 Sentinel ，并使用剩余的从服务器来创建新的主服务器。</li>
+<li><tt class="docutils literal"><span class="pre">+failover-triggered</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：给定的 Sentinel 作为领头 Sentinel 开始了一次新的故障转移操作。</li>
+<li><tt class="docutils literal"><span class="pre">+failover-state-wait-start</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：故障转移操作现在处于 <tt class="docutils literal"><span class="pre">wait-start</span></tt> 状态 —— Sentinel 在启动一次故障转移前，会先等待一段固定长度的时间（以秒为单位），然后再等待一段随机长度的时间（以秒为单位）。</li>
+<li><tt class="docutils literal"><span class="pre">+failover-state-select-slave</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：故障转移操作现在处于 <tt class="docutils literal"><span class="pre">select-slave</span></tt> 状态 —— Sentinel 正在寻找可以升级为主服务器的从服务器。</li>
+<li><tt class="docutils literal"><span class="pre">no-good-slave</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：Sentinel 操作未能找到适合进行升级的从服务器。Sentinel 会在一段时间之后再次尝试寻找合适的从服务器来进行升级，又或者直接放弃执行故障转移操作。</li>
+<li><tt class="docutils literal"><span class="pre">selected-slave</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：Sentinel 顺利找到适合进行升级的从服务器。</li>
+<li><tt class="docutils literal"><span class="pre">failover-state-send-slaveof-noone</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：Sentinel 正在将指定的从服务器升级为主服务器，等待升级功能完成。</li>
+<li><tt class="docutils literal"><span class="pre">failover-end-for-timeout</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：故障转移因为超时而中止。如果当前 Sentinel 为领头 Sentinel ，那么它将向所有正在等待重配置（reconfigure）的从服务器发送 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令。其中， <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令所设置的主服务器是 Sentinel 目前能找到的最佳主服务器候选。</li>
+<li><tt class="docutils literal"><span class="pre">failover-end</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：故障转移操作顺利完成。所有等待重配置的从服务器将开始与新的主服务器进行同步。</li>
+<li><tt class="docutils literal"><span class="pre">switch-master</span> <span class="pre">&lt;master</span> <span class="pre">name&gt;</span> <span class="pre">&lt;oldip&gt;</span> <span class="pre">&lt;oldport&gt;</span> <span class="pre">&lt;newip&gt;</span> <span class="pre">&lt;newport&gt;</span></tt> ：Sentinel 开始监控新的主服务器，至于主服务器的名字，则沿用旧的主服务器的名字。旧的主服务器会从 Sentinel 的监控列表中被移除。</li>
+<li><tt class="docutils literal"><span class="pre">failover-abort-x-sdown</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：故障转移操作已经被中止，因为原来打算升级为主服务器的从服务器已经被标记为主观下线状态。</li>
+<li><tt class="docutils literal"><span class="pre">-slave-reconf-undo</span> <span class="pre">&lt;instance</span> <span class="pre">details&gt;</span></tt> ：故障转移操作已经被中止，Sentinel 向给定的实例发送 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令，让它继续使用原来的主服务器。</li>
+<li><tt class="docutils literal"><span class="pre">+tilt</span></tt> ：进入 tilt 模式。</li>
+<li><tt class="docutils literal"><span class="pre">-tilt</span></tt> ：退出 tilt 模式。</li>
+</ul>
+</div>
+</div>
+<div class="section" id="id8">
+<h2>故障转移<a class="headerlink" href="#id8" title="永久链接至标题">¶</a></h2>
+<p>故障转移过程包含以下三个步骤：</p>
+<ul class="simple">
+<li>识别出已经进入客观下线状态的主服务器。</li>
+<li>找出负责对已下线主服务器进行故障转移操作的 Sentinel 。
+负责故障转移的 Sentinel 称为领头 Sentinel ，
+其他的 Sentinel 都是观察者（Observer) Sentinel 。</li>
+<li>领头 Sentinel 找出可以升级为主服务器的从服务器。</li>
+<li>从服务器通过执行 <tt class="docutils literal"><span class="pre">SLAVEOF</span> <span class="pre">NO</span> <span class="pre">ONE</span></tt> 命令来将自己转换成主服务器。</li>
+<li>观察者看见一个从服务器变成了主服务器，于是它们知道一次故障转移开始了。
+注意，
+这说明，
+当一个被监视的主服务器的某个从服务器升级为主服务器时，
+这意味着一次故障转移开始了。</li>
+<li>旧主服务器的所有从服务器都会通过 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令，
+开始与新主服务器进行同步。</li>
+<li>当所有从服务器都完成了与新主服务器的同步之后，
+领头 Sentinel 停止故障转移操作，
+并将旧主服务器从监视主服务器的列表中删除，
+然后将新主服务器添加到监视列表中，
+监视列表中新主服务器的名字沿用旧服务器的名字。</li>
+<li>当故障转移操作完成之后，观察者 Sentinel 也会将旧主服务器从监视列表中移除，
+然后开始监视新主服务器，
+正如领头 Sentinel 所做的那样。</li>
+</ul>
+<p>挑选领头 Sentinel 的机制和将一个实例判断为客观下线所使用的机制一样，
+它们都是由 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span></tt> 命令来实现的：
+一个 Sentinel 在接到这个命令的时候，
+会向发送命令的实例返回这个 Sentinel 所认为的领头 Sentinel ，
+这个领头 Sentinel 被称为主观领头（Subjective Leader） Sentinel ，
+以下是挑选主观领头 Sentinel 的方法：</p>
+<ul class="simple">
+<li>系统首先将不能执行故障转移的 Sentinel 从筛选列表中移除
+（一个 Sentinel 会通过发送信息到频道来说明自己能否执行故障转移）。</li>
+<li>系统从筛选列表中移除所有处于以下状态的 Sentinel ：
+Sentinel 被标记为主观下线，
+Sentinel 已断线，
+或者 Sentinel 最后回复 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令的时间超过 <tt class="docutils literal"><span class="pre">SENTINEL_INFO_VALIDITY_TIME</span></tt> 选项所指定的毫秒数
+（目前定位为 <tt class="docutils literal"><span class="pre">5</span></tt> 秒）。</li>
+<li>在所有筛选剩下的 Sentinel 实例里面，
+系统按字典序对实例的运行 ID 进行排序，
+并选出运行 ID 最小的那个 Sentinel 实例作为主观领头 Sentinel 。</li>
+</ul>
+<p>一个 Sentinel 要成为客观领头 Sentinel ，
+也即是，
+负责执行故障转移操作的 Sentinel ，
+它必须满足以下条件：</p>
+<ul class="simple">
+<li>这个 Sentinel 认为（think）自己是主观领头 Sentinel 。</li>
+<li>其他 Sentinel 也承认这个 Sentinel 为领头 Sentinel ：
+对于所有可以回复 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span></tt> 命令的 Sentinel 来说，
+这些 Sentinel 总数的 50% 以上同意这个 Sentinel 为领头 Sentinel ，
+并且同意 Sentinel 的数量大于或等于配置所设定的，
+执行故障转移所需的最少 Sentinel 数量。</li>
+</ul>
+<p>一旦一个 Sentinel 满足了以上列举的条件，
+那么它就是一个客观领头 Sentinel ，
+这个 Sentinel 可以开始执行故障转移操作。</p>
+<p>不过，
+在开始执行故障转移操作之前，
+程序总会延迟五秒加上一个随机秒数之后，
+才真正开始执行故障转移操作。</p>
+<p>这是一种额外的保护措施，
+如果在延迟期间，
+客观领头 Sentinel 看见有其他 Sentinel 实例将一个从服务器升级成了主服务器，
+那么这个客观领头 Sentinel 就会知道已经有其他客观领头 Sentinel 开始了一次故障转移操作，
+并将这个客观领头 Sentinel 转变为观察者 Sentinel 。</p>
+<p>因为理论上不可能同时出现两个客观领头 Sentinel ，
+所以这个保护措施只是一个冗余措施。</p>
+<p><strong>Sentinel 规则 #11</strong>：
+一个状况良好的从服务器应该能满足以下条件：</p>
+<ul>
+<li><p class="first">从服务器既不处于主观下线状态，也不处于客观下线状态。</p>
+</li>
+<li><p class="first">从服务器目前的网络链接状况良好，没有断线。</p>
+</li>
+<li><p class="first">从服务器最近一次返回 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令的时间，距离现在时间不超过五秒钟。</p>
+</li>
+<li><p class="first">从服务器最近一次返回 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令的时间，距离现在时间不超过五秒钟。</p>
+</li>
+<li><p class="first">根据最近一次 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令返回的信息，
+主从服务器之间的断线时长，
+不超过 Sentinel 发现主服务器进入主观下线状态的时长，
+加上 <tt class="docutils literal"><span class="pre">down_after_milliseconds</span></tt> 参数的值乘以 <tt class="docutils literal"><span class="pre">10</span></tt> 。</p>
+<p>比如说，
+如果 Sentinel 被配置为将断线 <tt class="docutils literal"><span class="pre">10</span></tt> 秒钟的主服务器标记为主观下线，
+并且主服务器已经下线 <tt class="docutils literal"><span class="pre">50</span></tt> 秒，
+那么我们只将和主服务器断开连接少于 <tt class="docutils literal"><span class="pre">50+(10*10)</span></tt> 秒的从服务器看作是状态良好的从服务器。</p>
+</li>
+<li><p class="first">从服务器没有被标记为 <tt class="docutils literal"><span class="pre">DEMOTE</span></tt> （参考后面的《主服务器恢复》一节）。</p>
+</li>
+</ul>
+<p><strong>Sentinel 规则 #12</strong>：
+一个主观领头 Sentinel ，
+就是所有监视同一主服务器中，
+运行 ID 较低的 Sentinel ；
+并且这个 Sentinel 最近一次返回 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令的时间距离当前时间不超过 5 秒钟；
+并且这个 Sentinel 通过发送信息告知了其他 Sentinel ，
+它可以执行故障转移操作；
+最后，
+这个 Sentinel 不处于 <tt class="docutils literal"><span class="pre">DISCONNECTED</span></tt> 状态。</p>
+<p><strong>Sentinel 规则 #12</strong>：
+当一个主服务器下线时，
+根据 Sentinel 规则 #4 所说的，
+Sentinel 向所有其他 Sentinel 发送 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span></tt> 。</p>
+<p>接收命令的 Sentinel 会向发送命令的 Sentinel 返回自己的主观领头 Sentinel 的运行 ID 。</p>
+<p>当一个 Sentinel 被包括它自己在内的至少 <tt class="docutils literal"><span class="pre">N</span></tt> 个 Sentinel 承认为主观领头 Sentinel 时，
+这个 Sentinel 就成为了给定主服务器的客观领头 Sentinel ，
+其中：</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">N</span></tt> 必须大于或等于配置所设定的，执行故障转移所需的最少 Sentinel 数量。</li>
+<li>对于同样报告主服务器已经下线的所有 Sentinel 来说，
+认同这个 Sentinel 为主观领头 Sentinel 的 Sentinel 数量必须大于半数。
+也即是，
+对于投票数 <tt class="docutils literal"><span class="pre">num_votes</span></tt> 来说，
+<tt class="docutils literal"><span class="pre">N</span></tt> 必须大于等于 <tt class="docutils literal"><span class="pre">num_votes/2+1</span></tt> 。</li>
+</ul>
+<p><strong>Sentinel 规则 #13</strong>：</p>
+<p>当以下条件都同时满足的时候，
+客观领头 Sentinel 开始执行故障转移操作，
+也即是，
+该 Sentinel 向下线主服务器的所有从服务器发送重配置（reconfigure）命令：</p>
+<ul class="simple">
+<li>主服务器处于客观下线状态。</li>
+<li>该 Sentinel 的 <tt class="docutils literal"><span class="pre">can-failover</span></tt> 选项为 <tt class="docutils literal"><span class="pre">yes</span></tt> 。</li>
+<li>该 Sentinel 目前发现至少有一个状态良好的从服务器。</li>
+<li>该 Sentinel 相信（believe）自己是客观领头 Sentinel 。</li>
+<li>没有针对同一主服务器的故障转移操作在执行。</li>
+</ul>
+<p><strong>Sentinel 规则 #14</strong>：</p>
+<p>当故障转移操作发生，
+并且以下条件为真时，
+监视者 Sentinel 只负责进行日志记录，
+以及在发布与订阅接口中产生相应的事件，
+但并不会对任何实例进行重配置：</p>
+<ul class="simple">
+<li>没有故障转移操作正在执行。</li>
+<li>尽管一个被监视主服务器属下的从服务器转换成了主服务器，
+但只要这个主服务器的运行 ID 和原来的运行 ID 不同时，
+那么故障迁移就不会执行。
+因为运行 ID 的改变说明了从服务器只是因为重启而变成了主服务器，
+它不是被 Sentinel 选中的新主服务器。</li>
+</ul>
+<p><strong>Sentinel 规则 #15</strong>：
+领头 Sentinel 并不会立即开始故障转移操作。
+它首先进入一个称为 <tt class="docutils literal"><span class="pre">wait-start</span></tt> 的状态，
+这个状态会随机地维持 <tt class="docutils literal"><span class="pre">5</span></tt> 秒至 <tt class="docutils literal"><span class="pre">15</span></tt> 秒之间。
+在这段时间内，
+Sentinel 规则 #14 会生效：
+如果在这段时间内，
+有另一个从服务器被提升为主服务器，
+那么这个领头 Sentinel 会放弃执行故障转移，
+然后从领头 Sentinel 转变为观察者 Sentinel 。</p>
+</div>
+<div class="section" id="id9">
+<h2>完成故障转移<a class="headerlink" href="#id9" title="永久链接至标题">¶</a></h2>
+<p>当以下条件满足时，
+Sentinel 将故障转移操作（process）视为完成：</p>
+<ul class="simple">
+<li>被升级的从服务器（也即是新的主服务器）未处于主观下线状态。</li>
+<li>从服务器升级为主服务器的过程已经完成。</li>
+<li>旧主服务器属下的所有从服务器的复制目标已经改为新主服务器。
+注意，
+处于主观下线状态的从服务器会被忽略。</li>
+</ul>
+<p>另外，
+当以下任一条件被满足时，
+故障转移操作会被中止：</p>
+<ul class="simple">
+<li>被升级的从服务器（也即是新的主服务器）处于主观下线状态。</li>
+<li>已经有一个从服务器被提升为新的主服务器。</li>
+<li>在故障转移操作的最近一个步骤执行之后，
+已经过了 <tt class="docutils literal"><span class="pre">failover-timeout</span></tt> 秒。</li>
+</ul>
+<p><tt class="docutils literal"><span class="pre">failover-timeout</span></tt> 的值可以在 <tt class="docutils literal"><span class="pre">sentinel.conf</span></tt> 文件中设置，
+每个不同的从服务器可以设置不同的 <tt class="docutils literal"><span class="pre">failover-timeout</span></tt> 。</p>
+<p>注意，
+当领头 Sentinel 因为超时而停止故障转移操作时，
+它向所有等待重配置的从服务器发送一条 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令，
+Sentinel 会期望从服务器能够接收到这条 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令，
+并最终完成和新主服务器的同步。</p>
+<p><strong>Sentinel 规则 #16</strong>：</p>
+<p>当以下条件被满足时，
+领头 Sentinel 或者观察者 Sentinel 将故障转移操作视为完成（compelte）：</p>
+<ul>
+<li><p class="first">一个从服务器被顺利升级为主服务器，
+并且 Sentinel 已经通过 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令确认了这一点。</p>
+<p>另外，
+旧主服务器所属的所有从服务器，
+已经开始复制新主服务器，
+并且 Sentinel 已经通过 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令确认了这一点。</p>
+</li>
+<li><p class="first">已经有一个从服务器被成功提升为主服务器，
+但对从服务器的重配置过程在 <tt class="docutils literal"><span class="pre">failover-timeout</span></tt> 所限定的时间内没有任何进展。</p>
+<p>在这种情况下，
+领头 Sentinel 会向目前所有未重配置的从服务器发送 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令，
+并期望从服务器可以接收到这个命令，
+并最终完成和新主服务器的同步。</p>
+</li>
+</ul>
+<p>在以上两个条件中，
+被升级的新主服务器必须是可达（reachable）的：
+也即是，
+该主服务器未处于主观下线状态，
+不然的话，
+故障转移操作就不算完成。</p>
+</div>
+<div class="section" id="id10">
+<h2>在进行故障转移的过程中，领头 Sentinel 失效<a class="headerlink" href="#id10" title="永久链接至标题">¶</a></h2>
+<p>在一个领头 Sentinel 仍未提升某个从服务器为主服务器之前，
+如果这个领头 Sentinel 进入主观下线状态，
+并且其他 Sentinel 发现了这一情况，
+那么只要剩余的 Sentinel 数量满足执行故障转移所需的数量，
+故障转移就会自动继续进行：
+剩余的 Sentinel 会重新选出新的领头 Sentinel ，
+然后由新的领头 Sentinel 来继续执行故障转移操作。</p>
+<p>假设故障转移正在进行中，
+某个从服务器已经被提升为主服务器，
+并且可能有数个从服务器已经开始对新主服务器进行复制，
+如果这时领头 Sentinel 在超过 <tt class="docutils literal"><span class="pre">failover-timeout</span></tt> 选项所设定时长的 25% 以上的时间里，
+没有进行任何动作，
+那么多个观察者 Sentinel 中的其中一个会被选举为新的客观领头 Sentinel ，
+然后这个新的领头 Sentinel 接替之前的领头 Sentinel ，
+继续进行故障转移。</p>
+<p>注意，
+多个 Sentinel 向等待重配置的从服务器发送相同的 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 并不会引起竞争条件：</p>
+<ul class="simple">
+<li>如果从服务器已经开始复制新服务器，
+那么这个重复的 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令会被安全地忽略，
+不会产生任何副作用或者性能问题。</li>
+<li>如果从服务器没有开始复制新服务器，
+那么复制就会正式开始。</li>
+</ul>
+<p>为了确保从服务器可以正确地复制新主服务器，
+在一个领头 Sentinel 失效，
+而另一个新的领头 Sentinel 出现之后，
+新的领头 Sentinel 再次向所有从服务器发送 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令是必须的。</p>
+<p><strong>Sentinel 规则 #17</strong>：</p>
+<p>对于故障转移过程中的观察者 Sentinel 来说，
+如果以下条件被满足，
+那么这个观察者 Sentinel 会被转换成新的领头 Sentinel ，
+并接替之前的领头 Sentinel ，
+继续执行故障转移操作：</p>
+<ul class="simple">
+<li>故障转移操作正在进行中，并且这个 Sentinel 是一个观察者 Sentinel 。</li>
+<li>这个观察者 Sentinel 被选举为新的领头 Sentinel 。</li>
+<li><tt class="docutils literal"><span class="pre">failover-timeout</span></tt> 选项所设定的时间的 25% 已经过去，
+故障转移操作仍然没有任何进展。</li>
+</ul>
+</div>
+<div class="section" id="id11">
+<h2>在故障转移过程中，被提升的新主服务器失效<a class="headerlink" href="#id11" title="永久链接至标题">¶</a></h2>
+<p>如果被提升的新主服务器在故障转移的过程中进入主观下线状态，
+那么 Sentinel 没有办法知道故障转移过程已经中止。</p>
+<p>不过，
+当新主服务器的下线时长超过 <tt class="docutils literal"><span class="pre">down-after-milliseconds</span></tt> 选项所设定的毫秒数的十倍之后，
+领头 Sentinel 或者观察者 Sentinel 会中止这次故障转移操作，
+然后重新开始监视原来的旧主服务器。
+如果这时旧主服务器仍然处于失效状态的话，
+那么 Sentinel 会使用新的从从服务器，
+从新开始一次新的故障转移操作。</p>
+<p>注意，
+当出现这种情况时，
+可能已经有某些从服务器已经复制了进入主观下线状态的新服务器。
+因此，
+当领头 Sentinel 中止一次故障转移操作时，
+它会向所有从服务器 —— 不管已经重配置完还是未配置完的 —— 都发送一个 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令，
+让它们重新将复制的目标指向原本的主服务器。</p>
+<p><strong>Sentinel 规则 #18</strong>：</p>
+<p>当满足以下条件时，
+一个 Sentinel （无论是领头还是观察者）会将故障转移过程视为中止：</p>
+<ul class="simple">
+<li>领头 Sentinel 已经选出了一个要被提升的从服务器，
+或者观察者已经识别到有一个从服务器被提升成了主服务器。</li>
+<li>被提升的从服务器（新主服务器）进入主观下线状态的时间已经超过了 <tt class="docutils literal"><span class="pre">down-after-milliseconds</span></tt> 选项所设定时间的十倍。</li>
+</ul>
+</div>
+<div class="section" id="resurrecting">
+<h2>主服务器恢复（resurrecting）<a class="headerlink" href="#resurrecting" title="永久链接至标题">¶</a></h2>
+<p>在故障转移操作执行之后，
+如果已下线的旧主服务器重新上线，
+那么只要你使用的是 2.6.13 或以上版本的 Redis ，
+Sentinel 就可以将旧主服务器重新作为新主服务器的从服务器来使用。</p>
+<p>以下是这个恢复工作的详细步骤：</p>
+<ul>
+<li><p class="first">当一次故障转移开始之后，
+领头 Sentinel 和观察者 Sentinel 都会将旧主服务器添加到一个列表中，
+这个列表包含了新主服务器的所有从服务器，
+并且列表中的旧主服务器会带有一个特殊的 <tt class="docutils literal"><span class="pre">DEMOTE</span></tt> 标记
+（这个标志可以用 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">SLAVES</span></tt> 命令查看）。</p>
+</li>
+<li><p class="first">一旦旧主服务器重新上线，
+那么 Sentinel 会使用 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令与它进行通讯，
+根据 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令的返回值，
+如果这个服务器的角色仍然是主服务器的话，
+那么 Sentinel 会向这个服务器发送一个 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令，
+让它成为新主服务器的从服务器。</p>
+<p>当这个旧主服务器顺利成为从服务器时，
+<tt class="docutils literal"><span class="pre">DEMOTE</span></tt> 标记就会被清除。</p>
+</li>
+</ul>
+<p>并没有一个专门负责将旧主服务器转变为从服务器的 Sentinel ，
+所以这个动作可能会因为 Sentinel 失效而失败。
+与此同时，
+当一个实例带有 <tt class="docutils literal"><span class="pre">DEMOTE</span></tt> 标志时，
+这个实例永远不会被提升为主服务器。</p>
+<p>当 Sentinel 通过 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令的回复确认一个旧主服务器已经成功转变为从服务器时，
+Sentinel 会产生一个 <tt class="docutils literal"><span class="pre">+slave</span></tt> 事件。</p>
+<p><strong>Sentinel 规则 #19</strong>：一旦故障转移操作开始，领头 Sentinel 和观察者 Sentinel 都会将旧主服务器设置为新主服务器的从服务器，并为它添加一个 <tt class="docutils literal"><span class="pre">DEMOTE</span></tt> 标志。</p>
+<p><strong>Sentinel 规则 #20</strong>：一旦 Sentinel 发现旧主服务器重新上线，并且 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令显示这个服务器仍然为主服务器时， Sentinel 就会通过 <a class="reference internal" href="../server/slaveof.html#slaveof"><em>SLAVEOF</em></a> 命令将这个旧主服务器转换成新主服务器的从服务器。</p>
+<p><strong>Sentinel 规则 #21</strong>：一旦 Sentinel 从 <a class="reference internal" href="../server/info.html#info"><em>INFO</em></a> 命令的回复中确认旧主服务器已经变为从服务器，那么旧主服务器的 <tt class="docutils literal"><span class="pre">DEMOTE</span></tt> 标记就会被清除。</p>
+</div>
+<div class="section" id="tilt">
+<h2>TILT 模式<a class="headerlink" href="#tilt" title="永久链接至标题">¶</a></h2>
+<p>Redis Sentinel 严重依赖计算机的时间功能：
+比如说，
+为了判断一个实例是否可用，
+Sentinel 会记录这个实例最后一次相应 <a class="reference internal" href="../connection/ping.html#ping"><em>PING</em></a> 命令的时间，
+并将这个时间和当前时间进行对比，
+从而知道这个实例有多长时间没有和 Sentinel 进行任何成功通讯。</p>
+<p>不过，
+一旦计算机的时间功能出现故障，
+或者计算机非常忙碌，
+又或者进程因为某些原因而被阻塞时，
+Sentinel 可能也会跟着出现故障。</p>
+<p>TILT 模式是一种特殊的保护模式：
+当 Sentinel 发现系统有些不对劲时，
+Sentinel 就会进入 TILT 模式。</p>
+<p>因为 Sentinel 的时间中断器默认每秒执行 10 次，
+所以我们预期时间中断器的两次执行之间的间隔为 100 毫秒左右。
+Sentinel 的做法是，
+记录上一次时间中断器执行时的时间，
+并将它和这一次时间中断器执行的时间进行对比：</p>
+<ul class="simple">
+<li>如果两次调用时间之间的差距为负值，
+或者非常大（超过 2 秒钟），
+那么 Sentinel 进入 TILT 模式。</li>
+<li>如果 Sentinel 已经进入 TILT 模式，
+那么 Sentinel 延迟退出 TILT 模式的时间。</li>
+</ul>
+<p>当 Sentinel 进入 TILT 模式时，
+它仍然会继续监视所有目标，
+但是：</p>
+<ul class="simple">
+<li>它不再执行任何操作，比如故障转移。</li>
+<li>当有实例向这个 Sentinel 发送 <tt class="docutils literal"><span class="pre">SENTINEL</span> <span class="pre">is-master-down-by-addr</span></tt> 命令时，
+Sentinel 返回负值：
+因为这个 Sentinel 所进行的下线判断已经不再准确。</li>
+</ul>
+<p>如果 TILT 可以正常维持 30 秒钟，
+那么 Sentinel 退出 TILT 模式。</p>
+</div>
+<div class="section" id="busy">
+<h2>处理 <tt class="docutils literal"><span class="pre">-BUSY</span></tt> 状态<a class="headerlink" href="#busy" title="永久链接至标题">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">警告</p>
+<p class="last">该功能尚未实现</p>
+</div>
+<p>当 Lua 脚本的运行时间超过指定时限时，
+Redis 就会返回 <tt class="docutils literal"><span class="pre">-BUSY</span></tt> 错误。</p>
+<p>当出现这种情况时，
+Sentinel 在尝试执行故障转移操作之前，
+会先向服务器发送一个 <a class="reference internal" href="../script/script_kill.html#script-kill"><em>SCRIPT KILL</em></a> 命令，
+如果服务器正在执行的是一个只读脚本的话，
+那么这个脚本就会被杀死，
+服务器就会回到正常状态。</p>
+</div>
+<div class="section" id="a">
+<h2>附录 A：算法与实现<a class="headerlink" href="#a" title="永久链接至标题">¶</a></h2>
+<div class="section" id="id12">
+<h3>移除重复 Sentinel<a class="headerlink" href="#id12" title="永久链接至标题">¶</a></h3>
+<p>当一个动作需要由多个 Sentinel 共同做出确定，
+又或者一个动作需要指定数量的 Sentinel 存在时才能发生，
+那么我们必须保证，
+统计的每个 Sentinel 都是独一无二的，
+而不重复统计了一个 Sentinel 多次。</p>
+<p>系统使用以下方法来移除重复的 Sentinel ：
+每当一个 Sentinel 向频道发送带有地址（包括 IP 地址和端口）和运行 ID 的信息时，
+如果系统不能在监视主服务器的 Sentinel 表中发现和这些信息完全匹配的 Sentinel ，
+那么表中原有的地址相同或者运行 ID 相同的 Sentinel 就会被移除，
+然后新的 Sentinel 会被添加到表中。</p>
+<p>举个例子，
+当一个 Sentinel 实例重启之后，
+这个 Sentinel 的运行 ID 就会和之前的运行 ID 不同，
+而原来的拥有相同地址的 Sentinel 就会从表中被移除，
+新的 Sentinel 就会被添加到表中。</p>
+</div>
+<div class="section" id="id13">
+<h3>挑选从服务器进行升级<a class="headerlink" href="#id13" title="永久链接至标题">¶</a></h3>
+<p>如果一个主服务器有多个从服务器，
+那么新主服务器将根据从服务器的优先级来决定，
+优先级较低的从服务器会被优先挑选。</p>
+<div class="admonition warning">
+<p class="first admonition-title">警告</p>
+<p class="last">从服务器的优先级是一个配置选项，
+目前尚未真正实现。</p>
+</div>
+<p>所有曾经和主服务器长时间断开连接的从服务器都不会进入新主服务器的候选名单中。</p>
+<p>如果有多个从服务器拥有相同的优先级，
+那么按照字典排序，
+运行 ID 最小的那个从服务器会被选中。</p>
+<div class="admonition warning">
+<p class="first admonition-title">警告</p>
+<p class="last">因为从服务器优先级功能尚未实现，
+所以目前的新主服务器挑选只根据对运行 ID 进行字典序排序的结果来进行。</p>
+</div>
+<p><strong>Sentinel 规则 #22</strong>：
+领头 Sentinel 会从目前状态良好的从服务器中（参考 Sentinel 规则 #11），
+挑选出一个优先级最低的从服务器进行升级，
+让它成为新的主服务器。
+如果有多个相同优先级的从服务器，
+那么运行 ID 按字典序排序最小的那个从服务器被选中。</p>
+</div>
+</div>
+<div class="section" id="b-sentinel">
+<h2>附录 B： Sentinel 用法五分钟极速教程<a class="headerlink" href="#b-sentinel" title="永久链接至标题">¶</a></h2>
+<p>如果你想尝试 Redis 的 Sentinel 系统，可以试着执行以下步骤：</p>
+<ol class="arabic simple">
+<li>从 github 仓库中复制 Redis 项目的 <tt class="docutils literal"><span class="pre">unstable</span></tt> 分支。</li>
+<li>用 <tt class="docutils literal"><span class="pre">make</span></tt> 命令编译项目。</li>
+<li>执行 <tt class="docutils literal"><span class="pre">redis-server</span></tt> 程序，
+运行一些 Redis 服务器实例。
+最少要有一个主服务器和一个从服务器。</li>
+<li>使用 <tt class="docutils literal"><span class="pre">redis-sentinel</span> <span class="pre">/path/to/sentinel.conf</span></tt> 命令启动三个 Sentinel 实例。</li>
+</ol>
+<p>三个实例的配置文件的内容和以下类似：</p>
+<div class="highlight-python"><pre>port 26379
+sentinel monitor mymaster 127.0.0.1 6379 2
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 900000
+sentinel can-failover mymaster yes
+sentinel parallel-syncs mymaster 1</pre>
+</div>
+<p>第一个端口号可以是 <tt class="docutils literal"><span class="pre">26379</span></tt> ，
+第二个 Sentinel 实例的端口号可以是 <tt class="docutils literal"><span class="pre">26380</span></tt> ，
+第三个 Sentinel 实例的端口号可以是 <tt class="docutils literal"><span class="pre">26381</span></tt> ，
+或者其他任何未被使用的端口号。</p>
+<p>注意 <tt class="docutils literal"><span class="pre">down-after-milliseconds</span></tt> 选项的值为 <tt class="docutils literal"><span class="pre">5</span></tt> 秒，
+这对于测试 Sentinel 是一个不错的值，
+但并不适用于生产环境。</p>
+<p>启动 Sentinel 之后，
+你应该可以在 Sentinel 的日志输出中发现类似以下内容：</p>
+<div class="highlight-python"><pre>[4747] 23 Jul 14:49:15.883 * +slave slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+[4747] 23 Jul 14:49:19.645 * +sentinel sentinel 127.0.0.1:26379 127.0.0.1 26379 @ mymaster 127.0.0.1 6379
+[4747] 23 Jul 14:49:21.659 * +sentinel sentinel 127.0.0.1:26381 127.0.0.1 26381 @ mymaster 127.0.0.1 6379</pre>
+</div>
+<p>你还可以通过客户端与 Sentinel 进行通讯：</p>
+<div class="highlight-python"><pre>redis-cli -p 26379 sentinel masters
+1)  1) "name"
+    2) "mymaster"
+    3) "ip"
+    4) "127.0.0.1"
+    5) "port"
+    6) "6379"
+    7) "runid"
+    8) "66215809eede5c0fdd20680cfb3dbd3bdf70a6f8"
+    9) "flags"
+    10) "master"
+    11) "pending-commands"
+    12) "0"
+    13) "last-ok-ping-reply"
+    14) "515"
+    15) "last-ping-reply"
+    16) "515"
+    17) "info-refresh"
+    18) "5116"
+    19) "num-slaves"
+    20) "1"
+    21) "num-other-sentinels"
+    22) "2"
+    23) "quorum"
+    24) "2"</pre>
+</div>
+<p>要观察 Sentinel 处理故障迁移的执行过程，
+你可以随意关停你的从服务器，
+比如使用 <tt class="docutils literal"><span class="pre">DEBUG</span> <span class="pre">SEGFAULT</span></tt> 命令让它崩溃。</p>
+<div class="admonition warning">
+<p class="first admonition-title">警告</p>
+<p class="last">这个示例目前还处于编写状态，
+所以内容比较简单，
+将来会添加更多内容。</p>
+</div>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'redis-command-cn'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<div id="sponsor">
+    <h2>赞助商</h2>
+    <p>计算关于生命、宇宙以及一切的终极的答案。</p>
+    <a href="http://vps.42qu.com" style="padding: 0px 0px 8px 20px;display: block;"><img src="../_static/42qu.png"/></a>
+    <a href="http://vps.42qu.com" style="font-weight: bold;padding-left: 20px;">42qu.com 主机空间</a>
+    <ul>
+        <li>中国 BGP 七线 / 美国五机房可选</li>
+        <li>独立 IP / root 权限</li>
+        <li><a href="http://www.vpsee.com/">vpsee</a> 专业技术支持</li>
+        <li>XEN 虚拟机，<span style="font-weight: bold;">卖给创业的你</span></li>
+    </ul>
+</div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>导航</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="总目录"
+             >索引</a></li>
+        <li class="right" >
+          <a href="cluster-spec.html" title="Redis 集群规范"
+             >下一页</a> |</li>
+        <li class="right" >
+          <a href="persistence.html" title="持久化（persistence）"
+             >上一页</a> |</li>
+        <li><a href="../index.html">Redis 命令参考</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; 版权所有 2013, Redis.
+      最后更新日期是 Sep 29, 2013.
+      使用 <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br/>
+<br/>
+<br/>
+
+
+<style type="text/css">
+  #version_menu, .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0.75s;
+    transition: all 0.25s 0.75s;
+  }
+  .footer_popout:hover #version_menu, .footer_popout:hover .rtd-badge.rtd {
+    -webkit-transition: all 0.25s 0s;
+    transition: all 0.25s 0s;
+  }
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    visibility: hidden;
+    opacity: 0;
+    bottom: 11px;
+    right: 47px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    visibility: visible;
+    opacity: 1;
+    right: 166px;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(//media.readthedocs.org//images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll top left no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/redis/?fromdocs=redis" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+        <li><a href="/en/2.6/">2.6</a></li>
+      
+        <li><a href="/en/2.4/">2.4</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>
